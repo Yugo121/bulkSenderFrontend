@@ -4,17 +4,18 @@
     <div class="modal-content">
       <div class="modal-header">
         <h1 class="modal-title fs-5" id="staticBackdropLabel">Map file</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <ul class="list-group" v-for="columnName in columnNames">
+        <ul class="list-group" v-for="productField in productProperties" :key="productField">
             <li class="list-group-item">
                 <div class="input-group">
-                    <label :for="columnName" class="form-label" for="column_name">{{ columnName }}</label>
+                    <label :for="productField" class="form-label" for="column_name">{{ productField }} in file: </label>
                 </div>
-                <select :id="columnName" v-model="selectedMappings[columnName]" class="form-select form-select-lg mb-3">
-                        <option v-for="productProperty in productProperties" :value="productProperty">{{ productProperty }}</option>
-                    </select>
+                <select :id="productField" v-model="selectedMappings[productField]" class="form-select form-select-lg mb-3">
+                  <option value="" disabled>Wybierz pole</option>
+                  <option v-for="columnName in columnNames" :value="columnName">{{ columnName }}</option>
+                </select>
             </li>
         </ul>
       </div>
@@ -37,16 +38,19 @@
 
 <script>
 import { Modal } from 'bootstrap';
+import axios from 'axios';
 
 export default {
     props: {
         columnNames: Array,
-        productProperties: Array
+        productProperties: Array,
+        rawCsvData: Array
     },
     data() {
         return {
             selectedMappings: {},
-            modalInstance: null
+            modalInstance: null,
+            modalMessage: ''
         }
     },
     mounted() {
@@ -58,7 +62,35 @@ export default {
         },
         mapFile() {
             console.log("Mapping file...");
-            console.log(this.selectedMappings);
+            const mappingObject = {...this.selectedMappings};
+            console.log(mappingObject);
+            this.sendFile();
+        },
+        sendFile(){
+          if(!this.selectedMappings || Object.keys(this.selectedMappings).length === 0) {
+            console.error('Please map the file before sending.');
+            return;
+          };
+
+          if(!this.rawCsvData || this.rawCsvData.length === 0) {
+            console.error('No data to send.');
+            return;
+          };
+
+          const payload = {
+            mappings: this.selectedMappings,
+            products: this.rawCsvData
+          }
+
+          console.log("Sending data to backend...");
+
+          axios.post('https://localhost:7144/api/products/csv', payload)
+            .then(response => {
+              console.log("Data successfully sent!", response);
+            })
+            .catch(error => {
+              console.error("Error occured during sending data: ", error);
+            });
         }
     }
 }
