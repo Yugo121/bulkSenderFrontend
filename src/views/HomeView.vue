@@ -15,14 +15,15 @@
       </div>
     </div>
 
-    <MapFileItem ref="mapFileItem" :columnNames="csvColumnFields" :productProperties="avaibleFields" :rawCsvData="rawCsvData" />
+    <MapFileItem ref="mapFileItem" :columnNames="csvColumnFields" :productProperties="avaibleFields" :rawCsvData="rawCsvData" :parameters="parameters" />
     <ModalAlert ref="modalAlert" :message="modalMessage"/>
 </template>
 
 <script>
-import MapFileItem from '@/components/MapFileItem.vue';
+import MapFileItem from '@/components/mapping/MapFileItem.vue';
 import ModalAlert from '@/components/ModalAlert.vue';
 import Papa from 'papaparse';
+import axios from 'axios';
 
 export default {
   components: {
@@ -34,9 +35,11 @@ export default {
       file: null,
       showModal: false,
       modalMessage: '',
-      avaibleFields: ['name', 'sku', 'ean', 'price', 'quantity', 'description', 'category', 'brand', "baselinker id", 'parameters' ], // rozwinąć parameters
+      avaibleFields: ['name', 'sku', 'ean', 'price', 'quantity', 'description', 
+      'category', 'brand'],
+      parameters: [],
       csvColumnFields: [],
-      rawCsvData: []
+      rawCsvData: [],
     }
   },
   methods: {
@@ -77,6 +80,21 @@ export default {
         }
       });
     },
+    async fetchParameters() {
+      try {
+        const response = await axios.get('https://localhost:7144/api/parameters');
+        //this.avaibleFields.push(...response.data);
+        this.parameters = response.data;
+        console.log("parameters: ", this.parameters);
+      } catch (error) {
+        console.error('Error fetching parameters:', error);
+        this.modalMessage = 'Error fetching parameters.';
+        this.$refs.modalAlert.openModal();
+      }
+    }
+  },
+  mounted() {
+    this.fetchParameters();
   }
 }
 </script>
