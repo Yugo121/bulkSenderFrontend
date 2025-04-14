@@ -14,7 +14,6 @@
         <div class="col"></div>
       </div>
     </div>
-
     <MapFileItem ref="mapFileItem" :columnNames="csvColumnFields" :productProperties="avaibleFields" :rawCsvData="rawCsvData" :parameters="parameters" />
     <ModalAlert ref="modalAlert" :message="modalMessage"/>
 </template>
