@@ -7,93 +7,32 @@
           <p>Here you can send products to Baselinker.</p>
           <div class="mb-3">
             <label for="file" class="form-label">Choose file to send: </label>
-            <input type="file" @change="onFileChange" class="form-control" id="file" placeholder="File" accept=".csv">
+            <input type="file" @change="store.onFileChange" class="form-control" id="file" placeholder="File" accept=".csv">
           </div>
-          <button @click="proccessFile" class="btn btn-light">Send file</button>
+          <button @click="store.proccessFile" class="btn btn-light">Send file</button>
         </div>
         <div class="col"></div>
       </div>
     </div>
-    <MapFileItem ref="mapFileItem" :columnNames="csvColumnFields" :productProperties="avaibleFields" :rawCsvData="rawCsvData" :parameters="parameters" />
-    <ModalAlert ref="modalAlert" :message="modalMessage"/>
+    <!-- :columnNames="store.csvColumnFields" :productProperties="store.avaibleFields" :rawCsvData="store.rawCsvData" :parameters="store.parameters"  -->
+    <MapFileItem ref="mapFileItem" />
+    <ModalAlert ref="modalAlert" :message="store.modalMessage"/>
 </template>
 
-<script>
-import MapFileItem from '@/components/mapping/MapFileItem.vue';
+<script setup>
+//store.fetchparameters
+import { useMappingStore } from '@/stores/mappingstore';
+import { ref, onMounted } from 'vue';
 import ModalAlert from '@/components/ModalAlert.vue';
-import Papa from 'papaparse';
-import axios from 'axios';
+import MapFileItem from '@/components/mapping/MapFileItem.vue';
 
-export default {
-  components: {
-    MapFileItem,
-    ModalAlert
-  },
-  data () {
-    return {
-      file: null,
-      showModal: false,
-      modalMessage: '',
-      avaibleFields: ['name', 'sku', 'ean', 'price', 'quantity', 'description', 
-      'category', 'brand'],
-      parameters: [],
-      csvColumnFields: [],
-      rawCsvData: [],
-    }
-  },
-  methods: {
-    onFileChange (e) {
-      this.file = e.target.files[0];
-    },
-    proccessFile () {
-      console.log("Sending file...");
+const store = useMappingStore();
+const modalAlert = ref(null);
+const mapFileItem = ref(null);
 
-      if(!this.file) {
-        this.modalMessage = 'Please select a file to upload.';
-        this.$refs.modalAlert.openModal();
-        return;
-      }
-      const fileExtension = this.file.name.split('.').pop().toLowerCase();
-
-      if(fileExtension != 'csv') {
-        this.modalMessage = 'Invalid file type. Please upload a CSV file.';
-        this.$refs.modalAlert.openModal();
-        return;
-      }
-
-      Papa.parse(this.file, {
-        header: true,
-        skipEmptyLines: true,
-        complete: (results) => {
-
-          if (!results.data.length) {
-            this.modalMessage = 'The uploaded CSV file is empty or incorrectly formatted.';
-              this.$refs.modalAlert.openModal();
-             return;
-          }
-
-          this.csvColumnFields = Object.keys(results.data[0] || {});
-          this.rawCsvData = results.data;
-
-          this.$refs.mapFileItem.openModal();
-        }
-      });
-    },
-    async fetchParameters() {
-      try {
-        const response = await axios.get('https://localhost:7144/api/parameters');
-        //this.avaibleFields.push(...response.data);
-        this.parameters = response.data;
-        console.log("parameters: ", this.parameters);
-      } catch (error) {
-        console.error('Error fetching parameters:', error);
-        this.modalMessage = 'Error fetching parameters.';
-        this.$refs.modalAlert.openModal();
-      }
-    }
-  },
-  mounted() {
-    this.fetchParameters();
-  }
-}
+onMounted(() => {
+  store.setModalAlertRef(modalAlert.value);
+  store.setMapFileItemRef(mapFileItem.value);
+  store.fetchParameters();
+});
 </script>
