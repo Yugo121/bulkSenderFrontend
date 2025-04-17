@@ -5,23 +5,23 @@ import axios from 'axios';
 export const useMappingStore = defineStore('mapping', {
 
     state: () => ({
-            file: null,
-            showModal: false,
+            file: null, //csvstore
+            showModal: false, //modalstore
             modalMessage: '',
             avaibleFields: ['name', 'sku', 'ean', 'price', 'quantity', 'description', 
             'category', 'brand'],
-            parameters: [],
-            csvColumnFields: [],
-            rawCsvData: [],
-            mapFileItemRef: null,
-            modalAlertRef: null,
-            mappingMetaModalRef: null,
+            parameters: [], //referenceDataStore
+            csvColumnFields: [], //csvstore
+            rawCsvData: [], //csvstore
+            mapFileItemRef: null, //modalstore
+            modalAlertRef: null,// modalstore
+            mappingMetaModalRef: null, //modalstore
             selectedProductMappings: {},
             selectedParameterMappings: {},
             savedMappings: [],
-            brands: [],
-            categories: [],
-            modalInstance: null,
+            brands: [], //referenceDataStore
+            categories: [], //referenceDataStore
+            modalInstance: null, //modalstore
             currentPage: 1,
             itemsPerPage: 10,
             saveMapping: true,
@@ -44,21 +44,21 @@ export const useMappingStore = defineStore('mapping', {
           } ,
     },
     actions: {
-        setMapFileItemRef(ref) {
+        setMapFileItemRef(ref) { //modalstore
             console.log("Setting modal ref: ", ref);
             this.mapFileItemRef = ref;
         },
-        setModalAlertRef(ref) {
+        setModalAlertRef(ref) { //modalstore
             this.modalAlertRef = ref;
         },
-        setMappingMetaModalRef(ref) {
+        setMappingMetaModalRef(ref) { //modalstore
             this.mappingMetaModalRef = ref;
         },
-        onFileChange (e) {
+        onFileChange (e) { //csvstrore
             this.file = e.target.files[0];
             console.log("File selected: ", this.file);
           },
-          proccessFile () {
+          proccessFile () { //csvstore
             console.log("Sending file...");
       
             if(!this.file) {
@@ -92,7 +92,7 @@ export const useMappingStore = defineStore('mapping', {
                  }
             });
           },
-        async fetchParameters() {
+        async fetchParameters() { //referenceDataStore
             try {
               const response = await axios.get('https://localhost:7144/api/parameters');
               this.parameters = response.data;
@@ -171,7 +171,7 @@ export const useMappingStore = defineStore('mapping', {
               this.currentPage--;
             }
           },
-          getSavedMappingsNames() {
+          getSavedMappingsNames() { 
             axios.get('https://localhost:7144/api/mappings/names')
               .then(response => {
                 this.savedMappings = response.data;
@@ -181,7 +181,7 @@ export const useMappingStore = defineStore('mapping', {
               });
             return this.savedMappings;
           },
-          getChoosedMapping(mappingName) {
+          getChoosedMapping(mappingName) { 
             axios.get(`https://localhost:7144/api/mappings/${mappingName}`)
               .then(response => {
                 console.log("Mapping data: ", response.data);
@@ -213,10 +213,12 @@ export const useMappingStore = defineStore('mapping', {
                   category: {
                     id: 0,
                     name: this.rawCsvData[0][this.selectedProductMappings["category"]],
+                    baselinkerId: 0,
                   },
                   brand: {
                     id: 0,
                     name: this.selectedProductMappings["brand"],
+                    baselinkerId: 0,
                   },
                   mappingEntriesDTO: [
                     ...Object.entries(this.selectedProductMappings).map(([key, value]) => ({
@@ -236,7 +238,7 @@ export const useMappingStore = defineStore('mapping', {
       
                 this.mappingMetaModalRef.show();
           },
-          getBrandsNames(){
+          getBrandsNames(){ //referenceDataStore
             axios.get('https://localhost:7144/api/brands/names')
               .then(response => {
                 this.brands = response.data;
@@ -246,7 +248,7 @@ export const useMappingStore = defineStore('mapping', {
                 console.error('Error fetching brands:', error);
               });
           },
-          getCategoriesNames(){
+          getCategoriesNames(){ //referenceDataStore
             axios.get('https://localhost:7144/api/categories/names')
               .then(response => {
                 this.categories = response.data;
