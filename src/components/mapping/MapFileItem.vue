@@ -40,7 +40,7 @@
                 <option v-for="brand in store.brands" key="brand" :value="brand">{{ brand }}</option>
               </select>
               
-              <select
+              <!-- <select
               v-else-if="field === 'category'"
                 :id="field"
                 :value="store.isFirstPage ? store.selectedProductMappings[field] : store.selectedParameterMappings[field]"
@@ -50,7 +50,7 @@
                 <option value="" disabled>Wybierz pole</option>
                 <option v-for="category in store.categories" :value="category">{{ category }}</option>
               </select>
-
+               -->
               <select
               v-else
                 :id="field"
@@ -92,7 +92,7 @@
 </template>
 
 <script setup>
-import { useMappingStore } from '@/stores/mappingstore';
+import { useMappingStore } from '@/stores/mappingStore';
 import { ref, onMounted } from 'vue';
 import { Modal } from 'bootstrap';
 import MappingMetaModal from '@/components/mapping/MappingMetaModal.vue';

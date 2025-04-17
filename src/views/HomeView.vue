@@ -14,14 +14,12 @@
         <div class="col"></div>
       </div>
     </div>
-    <!-- :columnNames="store.csvColumnFields" :productProperties="store.avaibleFields" :rawCsvData="store.rawCsvData" :parameters="store.parameters"  -->
     <MapFileItem ref="mapFileItem" />
     <ModalAlert ref="modalAlert" :message="store.modalMessage"/>
 </template>
 
 <script setup>
-//store.fetchparameters
-import { useMappingStore } from '@/stores/mappingstore';
+import { useMappingStore } from '@/stores/mappingStore';
 import { ref, onMounted } from 'vue';
 import ModalAlert from '@/components/ModalAlert.vue';
 import MapFileItem from '@/components/mapping/MapFileItem.vue';

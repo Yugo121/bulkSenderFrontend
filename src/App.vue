@@ -13,6 +13,9 @@
                 <router-link to="/brands" :class="['nav-link', { active: $route.path === '/brands' }]">Brands</router-link>
               </li>
               <li class="nav-item">
+                <router-link to="/categories" :class="['nav-link', { active: $route.path === '/categories' }]">Categories</router-link>
+              </li>
+              <li class="nav-item">
                 <router-link to="/settings" :class="['nav-link', { active: $route.path === '/settings' }]">Settings</router-link>
               </li>
             </ul>
