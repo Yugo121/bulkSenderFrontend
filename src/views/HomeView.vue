@@ -7,30 +7,37 @@
           <p>Here you can send products to Baselinker.</p>
           <div class="mb-3">
             <label for="file" class="form-label">Choose file to send: </label>
-            <input type="file" @change="store.onFileChange" class="form-control" id="file" placeholder="File" accept=".csv">
+            <input type="file" @change="csvStore.onFileChange" class="form-control" id="file" placeholder="File" accept=".csv">
           </div>
-          <button @click="store.proccessFile" class="btn btn-light">Send file</button>
+          <button @click="csvStore.processFile" class="btn btn-light">Send file</button>
         </div>
-        <div class="col"></div>
+        <div class="col">
+          <button @click="mapCategories.show" class="btn btn-light">Map categories</button>
+        </div>
       </div>
     </div>
     <MapFileItem ref="mapFileItem" />
-    <ModalAlert ref="modalAlert" :message="store.modalMessage"/>
+    <ModalAlert ref="modalAlert" :message="modalStore.modalMessage"/>
+    <MapCategories ref="mapCategories" />
 </template>
 
 <script setup>
-import { useMappingStore } from '@/stores/mappingStore';
+import { useModalStore } from '@/stores/modalStore';
+import { useCsvStore } from '@/stores/csvStore';
 import { ref, onMounted } from 'vue';
 import ModalAlert from '@/components/ModalAlert.vue';
 import MapFileItem from '@/components/mapping/MapFileItem.vue';
+import MapCategories from '@/components/mapping/MapCategories.vue';
 
-const store = useMappingStore();
+const modalStore = useModalStore();
+const csvStore = useCsvStore();
 const modalAlert = ref(null);
 const mapFileItem = ref(null);
+const mapCategories = ref(null);
 
 onMounted(() => {
-  store.setModalAlertRef(modalAlert.value);
-  store.setMapFileItemRef(mapFileItem.value);
-  store.fetchParameters();
+  modalStore.setModalAlertRef(modalAlert.value);
+  modalStore.setMapFileItemRef(mapFileItem.value);
+  modalStore.setCategoryModalRef(mapCategories.value);
 });
 </script>
