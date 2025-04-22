@@ -3,8 +3,8 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <!-- HEADER -->
-          <div class="modal-header">
-            <h5 class="modal-title" v-if="!$slots.header">{{ title }}</h5>
+          <div class="modal-header text-center">
+            <h5 class="modal-title fs-5" v-if="!$slots.header">{{ title }}</h5>
             <slot name="header"></slot>
             <button type="button" class="btn-close btn-close-white" @click="hide" aria-label="Close"></button>
           </div>
@@ -15,7 +15,7 @@
           </div>
   
           <!-- FOOTER -->
-          <div class="modal-footer">
+          <div class="modal-footer justify-content-between">
             <slot name="footer">
               <button type="button" class="btn btn-secondary" @click="hide">Close</button>
             </slot>

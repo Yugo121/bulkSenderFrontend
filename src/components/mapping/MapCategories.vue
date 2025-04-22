@@ -1,19 +1,20 @@
 <template>
     <BaseModal ref="mapCategories" :title="title">
         <template #body>
-            <div class="modal-body">
                 <ul class="list-group">
-                    <li v-for="category in categoriesInFile" :key="category" class="list-group">
+                    <li :id="category" v-for="category in mappingStore.getCategoriesFromFile()" :key="category" class="list-group">
                         <div class="input-group mb-3">
                             <label :for="category" class="form-label">Category of name <b>{{ category }}</b> in file:</label>
                         </div>
-                        <select class="form-select form-select-lg mb-3">
+                        <select 
+                        @change="mappingStore.assignCategoryIdInBl(category, $event.target.value)" 
+                        class="form-select form-select-lg mb-3"
+                        :value="mappingStore.mappedCategories[category]">
                             <option value="" disabled>Choose category</option>
-                            <option v-for="categoryInBl in categoriesInBl" :value="categoryInBl.id">{{ categoryInBl.name }}</option>
+                            <option  v-for="categoryInBl in referenceDataStore.blCategories" :value="categoryInBl.id">{{ categoryInBl.name }}</option>
                         </select>
                     </li>
                 </ul>
-            </div>
         </template>
 
         <template #footer>
@@ -23,38 +24,36 @@
     </BaseModal>
 </template>
 
-<script>
+<script setup>
 import BaseModal from '../base/BaseModal.vue';
+import { useMappingStore } from '@/stores/mappingStore';
+import { useReferenceDataStore } from '@/stores/referenceDataStore';
+import { ref, onMounted } from 'vue';
 
-//Przemyśleć sposób ogarniania kategorii na backendzie. Wysyłać i sprawdzać po nazwie i potem zwracać to czego nie znalazło do mapowania? Mapować od razu i wysyłać 
-//i dodawać tylko nie zmapowane? Poprawić na backendzie dodawanie obiektu do bazy, zrobić akcje do bla, i popróbować już dodawać testowe itemksy. 
+const mapCategories = ref(null);
+const mappingStore = useMappingStore();
+const referenceDataStore = useReferenceDataStore();
+const title = "Map file categories with baselinker.";
 
-export default {
-    components: { BaseModal },
-    props: ['products'],
-    data () {
-        return {
-            categoriesInBl: ['buty', 'spodnie', 'koszulka'],
-            categoriesInFile: [],
-            title: "Map file categories with baselinker.",
-        };
-    },
-    onMounted() {
-       
-    },
-    methods: {
-        show() {
-            this.$refs.mapCategories.show();
-        },
-        closeModal() {
-            this.$refs.mapCategories.hide();
-        },
-        confirm() {
-            this.$refs.mapCategories.hide();
-        },
-        getCategoriesName(){
-            this.categoriesInFile = this.products.map(p => p.category); 
-        }
-    }
+function show() {
+    this.$refs.mapCategories.show();
 }
+function closeModal() {
+    this.$refs.mapCategories.hide();
+}
+
+onMounted(() => {
+    referenceDataStore.fetchBaselinkerCategories();
+})
+
+// jest już fajnie zrobione, trzeba tylko zmienić w mappingStore metodzix, aka rozbić go na 2 (sendFile), do tworzenia pejlołdu jedna metoda i ona będzie
+// produkty przekazywać do tego modala, a druga robi wysyłańsko, też już z tego jak kategorie będą przypisane porpawnie z id z bla. 
+function confirm() {
+    console.log(mappingStore.mappedCategories);
+    this.$refs.mapCategories.hide();
+}
+defineExpose({
+    show, closeModal
+});
+
 </script>

@@ -1,43 +1,42 @@
 import { defineStore } from 'pinia';
+import { useModalStore } from './modalStore'; 
+import axios from 'axios';
 
 export const useReferenceDataStore = defineStore('referenceData', {
-    state: () => ({
-        brands: [],
-        parameters: [],
-        categories: [],
-    }),
-    actions: {
-        async fetchParameters() { //referenceDataStore
-            try {
-              const response = await axios.get('https://localhost:7144/api/parameters');
-              this.parameters = response.data;
-              console.log("parameters: ", this.parameters);
-            } catch (error) {
-              console.error('Error fetching parameters:', error);
-              this.modalMessage = 'Error fetching parameters.';
-              this.modalAlertRef.openModal();
-            }
-          },
-          getBrandsNames(){ //referenceDataStore
-            axios.get('https://localhost:7144/api/brands/names')
-              .then(response => {
-                this.brands = response.data;
-                console.log("Brands: ", this.brands);
-              })
-              .catch(error => {
-                console.error('Error fetching brands:', error);
-              });
-          },
-          getCategoriesNames(){ //referenceDataStore
-            axios.get('https://localhost:7144/api/categories/names')
-              .then(response => {
-                this.categories = response.data;
-                console.log("Categories: ", this.categories);
-              })
-              .catch(error => {
-                console.error('Error fetching categories:', error);
-              });
-          },
+  state: () => ({
+    parameters: [],
+    brands: [],
+    categories: [],
+    blCategories: []
+  }),
+  actions: {
+    async fetchParameters() {
+      const modalStore = useModalStore(); 
 
+      try {
+        const res = await axios.get('https://localhost:7144/api/parameters');
+        this.parameters = res.data;
+      } catch (e) {
+        modalStore.modalMessage = 'Error fetching parameters.';
+        modalStore.modalAlertRef.openModal();
+      }
+    },
+    async getBrandsNames() {
+      try {
+        this.brands = (await axios.get('https://localhost:7144/api/brands/names')).data;
+      } catch (e) {
+        console.error(e);
+      }
+    },
+    async getCategoriesNames() {
+      try {
+        this.categories = (await axios.get('https://localhost:7144/api/categories/names')).data;
+      } catch (e) {
+        console.error(e);
+      }
+    },
+    async fetchBaselinkerCategories() {
+      this.blCategories = [{id: 1, name: 'buty'}, {id: 2, name: 'spodnie'}, {id: 3, name: 'koszulka'}];
     }
-})
+  }
+});
