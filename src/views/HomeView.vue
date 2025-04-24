@@ -12,13 +12,11 @@
           <button @click="csvStore.processFile" class="btn btn-light">Send file</button>
         </div>
         <div class="col">
-          <button @click="mapCategories.show" class="btn btn-light">Map categories</button>
         </div>
       </div>
     </div>
     <MapFileItem ref="mapFileItem" />
     <ModalAlert ref="modalAlert" :message="modalStore.modalMessage"/>
-    <MapCategories ref="mapCategories" />
 </template>
 
 <script setup>
@@ -27,17 +25,14 @@ import { useCsvStore } from '@/stores/csvStore';
 import { ref, onMounted } from 'vue';
 import ModalAlert from '@/components/ModalAlert.vue';
 import MapFileItem from '@/components/mapping/MapFileItem.vue';
-import MapCategories from '@/components/mapping/MapCategories.vue';
 
 const modalStore = useModalStore();
 const csvStore = useCsvStore();
 const modalAlert = ref(null);
 const mapFileItem = ref(null);
-const mapCategories = ref(null);
 
 onMounted(() => {
   modalStore.setModalAlertRef(modalAlert.value);
   modalStore.setMapFileItemRef(mapFileItem.value);
-  modalStore.setCategoryModalRef(mapCategories.value);
 });
 </script>

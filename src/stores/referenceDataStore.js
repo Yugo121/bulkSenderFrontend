@@ -37,6 +37,7 @@ export const useReferenceDataStore = defineStore('referenceData', {
     },
     async fetchBaselinkerCategories() {
       this.blCategories = [{id: 1, name: 'buty'}, {id: 2, name: 'spodnie'}, {id: 3, name: 'koszulka'}];
+      return this.blCategories;
     }
   }
 });

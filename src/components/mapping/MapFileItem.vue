@@ -1,4 +1,3 @@
-
 <template>
   <BaseModal ref="mapFileModal" :title="title">
     <template #body>
@@ -43,12 +42,6 @@
               </select>
             </li>
           </ul>
-          <div class="form-check mt-3">
-            <input class="form-check-input" type="checkbox" id="saveMapping" v-model="mappingStore.saveMapping" />
-            <label class="form-check-label" for="saveMapping">
-              Save mapping
-            </label>
-          </div>
     </template>
 
     <template #footer>
@@ -60,8 +53,8 @@
     </template>
   </BaseModal>
 
-  <MappingMetaModal
-    ref="mappingMetaModal"
+  <MapCategories
+    ref="mapCategories"
     :payload="mappingStore.mappingPayload"
   />
 </template>
@@ -75,7 +68,7 @@ import { useCsvStore } from '@/stores/csvStore';
 
 import { ref, onMounted } from 'vue';
 import BaseModal from '@/components/base/BaseModal.vue';
-import MappingMetaModal from '@/components/mapping/MappingMetaModal.vue';
+import MapCategories from './MapCategories.vue';
 
 const mappingStore = useMappingStore();
 const modalStore = useModalStore();
@@ -83,7 +76,7 @@ const paginationStore = usePaginationStore();
 const referenceDataStore = useReferenceDataStore();
 const csvStore = useCsvStore();
 
-const mappingMetaModal = ref(null);
+const mapCategories = ref(null);
 const mapFileModal = ref(null);
 
 const title = "Map file";
@@ -91,15 +84,18 @@ const title = "Map file";
 function openModal() {
   this.$refs.mapFileModal.show();
 }
+function closeModal() {
+  this.$refs.mapFileModal.hide();
+}
 
 onMounted(() => {
-  modalStore.setMappingMetaModalRef(mappingMetaModal.value);
+  modalStore.setCategoryModalRef(mapCategories.value);
   mappingStore.getSavedMappingsNames();
   referenceDataStore.getBrandsNames();
   referenceDataStore.fetchParameters();
 });
 
-defineExpose({ openModal });
+defineExpose({ openModal, closeModal });
 </script>
 
 <style scoped>
