@@ -9,29 +9,41 @@
                         <select 
                         @change="mappingStore.assignCategoryIdInBl(category, $event.target.value)" 
                         class="form-select form-select-lg mb-3"
-                        :value="mappingStore.mappedCategories[category]">
+                        v-model="mappingStore.mappedCategories[category]">
                             <option value="" disabled>Choose category</option>
                             <option  v-for="categoryInBl in referenceDataStore.blCategories" :value="categoryInBl.id">{{ categoryInBl.name }}</option>
                         </select>
                     </li>
                 </ul>
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" id="saveMapping" v-model="mappingStore.saveMapping" />
+                    <label class="form-check-label" for="saveMapping">
+                        Save mapping
+                    </label>
+                </div>
         </template>
 
         <template #footer>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" @click="confirm" class="btn btn-light">Save mapping</button>
+        <button type="button" @click="mappingStore.sendFile(mappingStore.productsPayload)" class="btn btn-light">Save mapping</button>
         </template>
     </BaseModal>
+
+    <MappingMetaModal ref="mappingMetaModal" />
 </template>
 
 <script setup>
 import BaseModal from '../base/BaseModal.vue';
 import { useMappingStore } from '@/stores/mappingStore';
+import { useModalStore } from '@/stores/modalStore';
 import { useReferenceDataStore } from '@/stores/referenceDataStore';
 import { ref, onMounted } from 'vue';
+import MappingMetaModal from './MappingMetaModal.vue';
 
 const mapCategories = ref(null);
+const mappingMetaModal = ref(null);
 const mappingStore = useMappingStore();
+const modalStore = useModalStore();
 const referenceDataStore = useReferenceDataStore();
 const title = "Map file categories with baselinker.";
 
@@ -44,16 +56,10 @@ function closeModal() {
 
 onMounted(() => {
     referenceDataStore.fetchBaselinkerCategories();
+    modalStore.setMappingMetaModalRef(mappingMetaModal.value);
 })
 
-// jest już fajnie zrobione, trzeba tylko zmienić w mappingStore metodzix, aka rozbić go na 2 (sendFile), do tworzenia pejlołdu jedna metoda i ona będzie
-// produkty przekazywać do tego modala, a druga robi wysyłańsko, też już z tego jak kategorie będą przypisane porpawnie z id z bla. 
-function confirm() {
-    console.log(mappingStore.mappedCategories);
-    this.$refs.mapCategories.hide();
-}
 defineExpose({
     show, closeModal
 });
-
 </script>

@@ -15,6 +15,7 @@ export const useMappingStore = defineStore('mapping', {
     mappingPayload: {},
     mappedCategories: [],
     products: [],
+    productsPayload: {},
   }),
   getters: {
     currentFields: (state) => {
@@ -41,15 +42,18 @@ export const useMappingStore = defineStore('mapping', {
       this[target][field] = value;
     },
     mapFile() {
+      const modalStore = useModalStore();
       const combined = {
         ...this.selectedProductMappings,
         ...this.selectedParameterMappings,
         category: { name: this.selectedProductMappings.category }
       };
-      this.sendFile(combined);
+      modalStore.mapFileItemRef.closeModal();
+      this.createProductPayload(combined);
     },
-    async sendFile(combinedMappings) {
+    async createProductPayload(combinedMappings) {
       const csvStore = useCsvStore();
+      const modalStore = useModalStore();
       if (!combinedMappings || Object.keys(combinedMappings).length === 0) {
         console.error('Please map before sending.');
         return;
@@ -58,15 +62,29 @@ export const useMappingStore = defineStore('mapping', {
       this.products = raw.map(row => {
         const mapped = {};
         for (const [target, column] of Object.entries(combinedMappings)) {
-          mapped[target] = row[column];
+          if (target === 'category') {
+            mapped[target] = { id: 0, name: row[column.name], baselinkerId: 0 };
+          } else if (target === 'brand') {
+            mapped[target] = this.selectedProductMappings.brand;
+          } else {
+            mapped[target] = row[column];
+          }
         }
-        mapped.brand = this.selectedProductMappings.brand;
         return mapped;
       });
-      const payload = { productMappings: this.selectedProductMappings, parameterMappings: this.selectedParameterMappings, products: this.products };
-      if (this.saveMapping) this.createPayload();
+      this.productsPayload = { productMappings: this.selectedProductMappings, parameterMappings: this.selectedParameterMappings, products: this.products };
+      modalStore.categoryModalRef.show();
+    },
+    async sendFile(payload) {
+      const modalStore = useModalStore();
       try {
-        await axios.post('https://localhost:7144/api/products/csv', payload);
+        const flatProducts = this.products.map(p => this.flattenProduct(p));
+        payload.products = flatProducts;
+        console.log("Payload: ", payload);
+        //await axios.post('https://localhost:7144/api/products/csv', payload);
+        modalStore.categoryModalRef.closeModal();
+        console.log(this.saveMapping)
+        if (this.saveMapping) this.createMappingPayload();
       } catch (e) {
         console.error(e);
       }
@@ -96,7 +114,7 @@ export const useMappingStore = defineStore('mapping', {
           console.error('Error fetching chosen mapping:', error);
         });
     },
-    createPayload() {
+    createMappingPayload() {
       const modalStore = useModalStore();
       const csvStore = useCsvStore();
       this.mappingPayload = {
@@ -127,19 +145,33 @@ export const useMappingStore = defineStore('mapping', {
     modalStore.mappingMetaModalRef.closeModal();
     },
     assignCategoryIdInBl(catInFileName, value) {
-      const existing = this.mappedCategories.find(item => item.name === catInFileName);
-      if (existing) {
-          existing.baselinkerId = value;
-      }else {
-          this.mappedCategories.push({
-          name: catInFileName,
-          baselinkerId: value
-          });
-      }
+      const existing = this.productsPayload.products.find(item => item.category.name === catInFileName);
+          this.productsPayload.products.forEach(product => {
+            if (product.category.name === catInFileName) {
+                product.category.baselinkerId = value;
+            }
+        });
     },
     getCategoriesFromFile() {
       let categoriesNames = this.products.map(p => p.category?.name || 'Undefined category!');
-      return categoriesNames;
-    }
+      const unique = Array.from(new Set(categoriesNames));
+
+      return unique;
+    },
+    flattenProduct(product) {
+      const flatProduct = {};
+    
+      for (const [key, value] of Object.entries(product)) {
+        if (typeof value === 'object' && value !== null) {
+          for (const [subKey, subValue] of Object.entries(value)) {
+            flatProduct[`${key}.${subKey}`] = String(subValue);
+          }
+        } else {
+          flatProduct[key] = String(value);
+        }
+      }
+    
+      return flatProduct;
+    },
   },
 });
