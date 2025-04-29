@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { useReferenceDataStore } from './referenceDataStore';
+import { useReferenceDataStore } from './/referenceDataStore';
 
 export const usePaginationStore = defineStore('pagination', {
   state: () => ({

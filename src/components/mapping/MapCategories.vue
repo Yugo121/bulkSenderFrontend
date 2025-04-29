@@ -7,11 +7,11 @@
                             <label :for="category" class="form-label">Category of name <b>{{ category }}</b> in file:</label>
                         </div>
                         <select 
-                        @change="mappingStore.assignCategoryIdInBl(category, $event.target.value)" 
+                        @change="mappingStore.assignCategoryIdInBl(category, mappingStore.mappedCategories[category])" 
                         class="form-select form-select-lg mb-3"
                         v-model="mappingStore.mappedCategories[category]">
                             <option value="" disabled>Choose category</option>
-                            <option  v-for="categoryInBl in referenceDataStore.blCategories" :value="categoryInBl.id">{{ categoryInBl.name }}</option>
+                            <option  v-for="categoryInBl in referenceDataStore.blCategories" :value="categoryInBl">{{ categoryInBl.name }}</option>
                         </select>
                     </li>
                 </ul>
