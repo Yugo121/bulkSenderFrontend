@@ -63,7 +63,7 @@ export const useMappingStore = defineStore('mapping', {
         const mapped = {};
         for (const [target, column] of Object.entries(combinedMappings)) {
           if (target === 'category') {
-            mapped[target] = { id: 0, name: row[column.name], baselinkerId: 0 };
+            mapped[target] = { id: 0, name: row[column.name], baselinkerId: 0, baselinkerName: "" };
           } else if (target === 'brand') {
             mapped[target] = this.selectedProductMappings.brand;
           } else {
@@ -81,9 +81,8 @@ export const useMappingStore = defineStore('mapping', {
         const flatProducts = this.products.map(p => this.flattenProduct(p));
         payload.products = flatProducts;
         console.log("Payload: ", payload);
-        //await axios.post('https://localhost:7144/api/products/csv', payload);
+        await axios.post('https://localhost:7144/api/products/csv', payload);
         modalStore.categoryModalRef.closeModal();
-        console.log(this.saveMapping)
         if (this.saveMapping) this.createMappingPayload();
       } catch (e) {
         console.error(e);
@@ -122,7 +121,7 @@ export const useMappingStore = defineStore('mapping', {
         name: '',
         description: '',
         title: '',
-        category: { id:0, name: csvStore.rawCsvData[0][this.selectedProductMappings.category], baselinkerId:0 },
+        category: { id:0, name: csvStore.rawCsvData[0][this.selectedProductMappings.category], baselinkerId:0 , baselinkerName: "" },
         brand: { id:0, name: this.selectedProductMappings.brand, baselinkerId:0 },
         mappingEntriesDTO: [
           ...Object.entries(this.selectedProductMappings).map(([k,v]) => ({ id: crypto.randomUUID(), targetField:k, columnName:v, mappingType:0 })),
@@ -134,7 +133,6 @@ export const useMappingStore = defineStore('mapping', {
     sendSavedMapping() {
       const modalStore = useModalStore();
 
-      console.log("Mapping payload: ", this.mappingPayload);
       axios.post('https://localhost:7144/api/mappings', this.mappingPayload)
       .then(response => {
           console.log("Mapping saved successfully!", response);
@@ -148,7 +146,9 @@ export const useMappingStore = defineStore('mapping', {
       const existing = this.productsPayload.products.find(item => item.category.name === catInFileName);
           this.productsPayload.products.forEach(product => {
             if (product.category.name === catInFileName) {
-                product.category.baselinkerId = value;
+              console.log("vALUE PARAMETER : ", value);
+                product.category.baselinkerId = value.id;
+                product.category.baselinkerName = value.name;
             }
         });
     },

@@ -38,6 +38,19 @@ export const useReferenceDataStore = defineStore('referenceData', {
     async fetchBaselinkerCategories() {
       this.blCategories = [{id: 1, name: 'buty'}, {id: 2, name: 'spodnie'}, {id: 3, name: 'koszulka'}];
       return this.blCategories;
+    },
+    async sendProductsToBaselinker(products) {
+      console.log("Sending products to Baselinker: ", products);
+      products.forEach(product => {
+        console.log("Sending product: ", product);
+        // axios.post('https://localhost:7144/api/baselinker/products', product)
+        //   .then(response => {
+        //     console.log("Product sent successfully!", response);
+        //   })
+        //   .catch(error => {
+        //     console.error("Error occurred during sending product: ", error);
+        //   });
+      });
     }
   }
 });
