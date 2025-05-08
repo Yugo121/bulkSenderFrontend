@@ -7,6 +7,7 @@ export const useModalStore = defineStore('modal', {
     mapFileItemRef: null,
     modalAlertRef: null,
     mappingMetaModalRef: null,
+    brandModalRef: null,
     modalInstance: null,
     categoryModalRef: null,
   }),
@@ -22,6 +23,9 @@ export const useModalStore = defineStore('modal', {
     },
     setCategoryModalRef(ref) {
       this.categoryModalRef = ref;
-    }
+    },
+    setBrandModalRef(ref) {
+      this.brandModalRef = ref;
+    },
   }
 });

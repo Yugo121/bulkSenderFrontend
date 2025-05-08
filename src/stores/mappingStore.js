@@ -77,13 +77,17 @@ export const useMappingStore = defineStore('mapping', {
     },
     async sendFile(payload) {
       const modalStore = useModalStore();
+      const referenceDataStore = useReferenceDataStore();
       try {
         const flatProducts = this.products.map(p => this.flattenProduct(p));
         payload.products = flatProducts;
         console.log("Payload: ", payload);
         await axios.post('https://localhost:7144/api/products/csv', payload);
         modalStore.categoryModalRef.closeModal();
-        if (this.saveMapping) this.createMappingPayload();
+        if (this.saveMapping)
+          this.createMappingPayload();
+        else           
+          referenceDataStore.getProductsNotInBaselinker(1, 20);
       } catch (e) {
         console.error(e);
       }
@@ -116,23 +120,26 @@ export const useMappingStore = defineStore('mapping', {
     createMappingPayload() {
       const modalStore = useModalStore();
       const csvStore = useCsvStore();
+      const referenceDataStore = useReferenceDataStore();
       this.mappingPayload = {
         id: crypto.randomUUID(),
         name: '',
         description: '',
         title: '',
-        category: { id:0, name: csvStore.rawCsvData[0][this.selectedProductMappings.category], baselinkerId:0 , baselinkerName: "" },
-        brand: { id:0, name: this.selectedProductMappings.brand, baselinkerId:0 },
+        category: { id:crypto.randomUUID(), name: csvStore.rawCsvData[0][this.selectedProductMappings.category], baselinkerId:0 , baselinkerName: "" },
+        brand: { id:crypto.randomUUID(), name: this.selectedProductMappings.brand, baselinkerId:0, description: "" },
         mappingEntriesDTO: [
           ...Object.entries(this.selectedProductMappings).map(([k,v]) => ({ id: crypto.randomUUID(), targetField:k, columnName:v, mappingType:0 })),
           ...Object.entries(this.selectedParameterMappings).map(([k,v]) => ({ id: crypto.randomUUID(), targetField:k, columnName:v, mappingType:1 }))
         ]
       };
       modalStore.mappingMetaModalRef.show();
+      referenceDataStore.getProductsNotInBaselinker(1, 20);
     },
     sendSavedMapping() {
       const modalStore = useModalStore();
 
+      console.log("Mapping payload: ", this.mappingPayload);
       axios.post('https://localhost:7144/api/mappings', this.mappingPayload)
       .then(response => {
           console.log("Mapping saved successfully!", response);
@@ -140,14 +147,14 @@ export const useMappingStore = defineStore('mapping', {
       .catch(error => {
         console.error("Error occurred during saving mapping: ", error);
       });
-    modalStore.mappingMetaModalRef.closeModal();
+      modalStore.mappingMetaModalRef.closeModal();
     },
     assignCategoryIdInBl(catInFileName, value) {
       const existing = this.productsPayload.products.find(item => item.category.name === catInFileName);
           this.productsPayload.products.forEach(product => {
             if (product.category.name === catInFileName) {
               console.log("vALUE PARAMETER : ", value);
-                product.category.baselinkerId = value.id;
+                product.category.baselinkerId = value.category_id;
                 product.category.baselinkerName = value.name;
             }
         });

@@ -11,56 +11,56 @@
             </div>
         </div>
         <div class="row mb-3">
-            <div class="col-4">
-                <span>Brand name</span>
+            <div class="col-1">
             </div>
-            <div class="col-4">
-                <span>Description</span>
+            <div class="col-12 ">
+                <table class="table table-dark table-bordered">
+                    <thead>
+                        <tr class="text-center">
+                        <th scope="col">#</th>
+                        <th scope="col">Brand name</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Baselinker id</th>
+                        <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="text-center" v-for="brand in referenceDataStore.brands" :key="brand.id">
+                        <th scope="row">{{ referenceDataStore.brands.indexOf(brand) + 1}}</th>
+                        <td> {{ brand.name }} </td>
+                        <td> {{ brand.description }} </td>
+                        <td> {{ brand.baselinkerId }} </td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" aria-label="Edit brand" @click="editBrand(brand)">Edit brand</button>
+                        </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            <div class="col-4">
-                <span>Mapping</span>
-            </div>
-        </div>
-        <div v-for="brand in brands" :key="brand.id" class="row mb-1">
-            <div class="col-4">
-                    <p class="form-control form-control-sm bg-dark text-white">
-                        {{ brand.name }}
-                    </p>
-            </div>
-            <div class="col-4">
-                    <p class="form-control form-control-sm bg-dark text-white">
-                        {{ brand.description }}
-                    </p>
-            </div>
-            <div class="col-4">
-                    <p class="form-control form-control-sm bg-dark text-white d-flex justify-content-between align-items-center">
-                        <span>placeholder</span>
-                        <button class="btn btn-light btn-sm">Edit</button>
-                    </p>    
-            </div>
-
+            <div class="col-1"></div>
         </div>
     </div>
+    <BrandModal ref="brandModalRef"></BrandModal>
 </template>
 
 <script setup>
+import { useReferenceDataStore } from '@/stores/referenceDataStore.js'
+import { useModalStore } from '@/stores/modalStore';
 import { ref, onMounted } from 'vue';
-import  apiClient  from '@/axiosInstance';
+import BrandModal from '@/components/entities/BrandModal.vue';
 
-const brands = ref([]);
-const error = ref(null);
+const referenceDataStore = useReferenceDataStore()
+const modalStore = useModalStore()
+const brandModalRef = ref(null)
 
-const fetchBrands = async () => {
-    try {
-        const response = await apiClient.get('/brands');
-        brands.value = response.data;
-    } catch (err) {
-        error.value = err.response.data.message;
-        console.error(err);
-    }
-};
+onMounted(() => {
+    referenceDataStore.fetchBrands()
+    modalStore.setBrandModalRef(brandModalRef)
+})
 
-onMounted(fetchBrands);
+function editBrand(brand) {
+    brandModalRef.value.openModal(brand)
+}
 </script>
 
 <style scoped>

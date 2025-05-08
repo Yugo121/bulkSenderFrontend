@@ -11,41 +11,80 @@
           </div>
           <button @click="csvStore.processFile" class="btn btn-light">Send file</button>
         </div>
-        <div class="col">
-        </div>
+        <div class="col"></div>
       </div>
-      <div v-if="mappingStore.products.length > 0" class="row">
+      <div class="row my-4">
+        <div class="col"></div>
+        <div class="col-10 text-center">
+          <button @click="referenceDataStore.getProductsNotInBaselinker(paginationStore.currentPage, paginationStore.itemsPerPage)" class="btn btn-light">Show products to send to baselinker</button>
+        </div>
+        <div class="col"></div>
+      </div>
+      <div v-if="productStore.productsNotInBl.length > 0 && productStore.showNotSent" class="row">
         <div class="col"></div>
         <div class="col-10">
           <div class="mt-3">
-            <p>Added listed below products to db. Do you want to send them to baselinker?</p>
-            <ul class="list-group">
-              <li class="list-group-item d-flex justify-content-between align-items-center" style="background-color: rgb(43, 42, 36);" v-for="product in mappingStore.products" :key="product.id">
-                <div class="d-flex align-items-center" >
-                  <label style="color: white;" class="me-2" :for="product.ean">Ean:</label>
-                  <span class="input-group-text me-2" :id="product.ean">{{ product.ean }}</span>
-                  <label style="color: white;" class="me-2" :for="product.sku">Sku:</label>
-                  <span class="input-group-text" :id="product.sku">{{ product.sku }}</span>
-                </div>
-                <button class="btn btn-light" aria-label="Edit mapping">Edit mapping</button>
-              </li>
-            </ul>
+            <p>Listed below products were added to db but not to baselinker. Do you want to send them to baselinker?</p>
+            <table class="table table-dark table-bordered">
+              <thead>
+                <tr class="text-center">
+                  <th scope="col">#</th>
+                  <th scope="col">Ean</th>
+                  <th scope="col">Sku</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr  v-for="product in productStore.productsNotInBl" :key="product.id" class="text-center">
+                  <th scope="row">{{ productStore.productsNotInBl.indexOf(product) + 1}}</th>
+                  <td>{{ product.ean }}</td>
+                  <td> {{ product.sku }}</td>
+                  <td> {{ product.name }}</td>
+                  <td>
+                    <button class="btn btn-secondary" aria-label="Edit product" :value="product.id">Edit product</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="my-3">
+            <nav aria-label="Page navigation example">
+              <ul class="pagination justify-content-center">
+                <li class="page-item" :class="{ disabled: paginationStore.isFirstPage }">
+                  <a @click="prevPage()" class="page-link" aria-label="Previous">
+                      <span aria-hidden="true">&laquo;</span>
+                  </a>
+                </li>
+                <li class="page-item" v-for="page in paginationStore.visiblePages"><a @click="showPage(page)" class="page-link" >{{page}}</a></li>
+                <li class="page-item" :class="{ disabled: paginationStore.isLastPage }">
+                  <a @click="nextPage()" class="page-link" aria-label="Next">
+                    <span   aria-hidden="true">&raquo;</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>          
           </div>
         </div>
         <div class="col">
-          <button @click="referenceDataStore.sendProductsToBaselinker(mappingStore.products)" class="btn btn-light">Send to baselinker!</button>
+          <button @click="referenceDataStore.sendProductsToBaselinker(productStore.productsNotInBl)" class="btn btn-light">Send to baselinker!</button>
         </div>
-        </div>
+      </div>
     </div>
     <MapFileItem ref="mapFileItem" />
     <ModalAlert ref="modalAlert" :message="modalStore.modalMessage"/>
 </template>
 
 <script setup>
+//do zrobienia - pobranie kategorii oraz producentow z bla, logika przypisania ich id do encji z bazy, 
+// usunięcie bazy i zrobienie od zera, wysłanie pierwszych itemów do baselinker - to wszystko na backend, ale pisze tu bo prędzej zobacze xd
+// ponadto zapisywanie mappingu trzeba zmienić, żeby dla każdego rodzaju kategorii robiło sejwa - to już ogarnąć po stronie fronta
 import { useModalStore } from '@/stores/modalStore';
+import { usePaginationStore } from '@/stores/paginationStore';
 import { useMappingStore } from '@/stores/mappingStore';
 import { useCsvStore } from '@/stores/csvStore';
 import { useReferenceDataStore } from '@/stores/referenceDataStore';
+import { useProductStore } from '@/stores/productStore';
 import { ref, onMounted } from 'vue';
 import ModalAlert from '@/components/ModalAlert.vue';
 import MapFileItem from '@/components/mapping/MapFileItem.vue';
@@ -53,7 +92,9 @@ import MapFileItem from '@/components/mapping/MapFileItem.vue';
 const modalStore = useModalStore();
 const mappingStore = useMappingStore();
 const referenceDataStore = useReferenceDataStore();
+const paginationStore = usePaginationStore();
 const csvStore = useCsvStore();
+const productStore = useProductStore();
 const modalAlert = ref(null);
 const mapFileItem = ref(null);
 
@@ -61,4 +102,25 @@ onMounted(() => {
   modalStore.setModalAlertRef(modalAlert.value);
   modalStore.setMapFileItemRef(mapFileItem.value);
 });
+
+function nextPage() {
+  paginationStore.nextPage();
+  referenceDataStore.getProductsNotInBaselinker(paginationStore.currentPage, paginationStore.itemsPerPage);
+}
+function prevPage() {
+  paginationStore.prevPage();
+  referenceDataStore.getProductsNotInBaselinker(paginationStore.currentPage, paginationStore.itemsPerPage);
+}
+function showPage(page) {
+  paginationStore.goToPage(page);
+  referenceDataStore.getProductsNotInBaselinker(paginationStore.currentPage, paginationStore.itemsPerPage);
+}
 </script>
+
+<style scoped>
+.page-link {
+  cursor: pointer;
+  background-color: rgb(43, 42, 36);
+  color: white;
+}
+</style>
