@@ -46,9 +46,9 @@
 
     <template #footer>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" @click="paginationStore.prevPage" class="btn btn-light" :disabled="paginationStore.currentPage === 1">Previous</button>
+        <button type="button" @click="paginationStore.prevPage" class="btn btn-light" :disabled="paginationStore.isFirstPage">Previous</button>
         <span class="text-light">Page {{ paginationStore.currentPage }} of {{ paginationStore.totalPages }}</span>
-        <button type="button" @click="paginationStore.nextPage" class="btn btn-light" :disabled="paginationStore.currentPage === paginationStore.totalPages">Next</button>
+        <button type="button" @click="paginationStore.nextPage" class="btn btn-light" :disabled="paginationStore.isLastPage">Next</button>
         <button type="button" @click="mappingStore.mapFile" class="btn btn-light">Map file</button>
     </template>
   </BaseModal>
@@ -88,11 +88,13 @@ function closeModal() {
   this.$refs.mapFileModal.hide();
 }
 
-onMounted(() => {
+onMounted(async () => {
   modalStore.setCategoryModalRef(mapCategories.value);
   mappingStore.getSavedMappingsNames();
-  referenceDataStore.getBrandsNames();
-  referenceDataStore.fetchParameters();
+  await referenceDataStore.getBrandsNames();
+  await referenceDataStore.fetchParameters();
+  paginationStore.extraPages = 1;
+  paginationStore.setTotalItems(referenceDataStore.parameters.length);
 });
 
 defineExpose({ openModal, closeModal });
