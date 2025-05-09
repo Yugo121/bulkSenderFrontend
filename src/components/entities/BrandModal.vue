@@ -10,23 +10,24 @@
                 <textarea class="form-control" id="brandDescription" rows="3" placeholder="Enter brand description" v-model="editedBrand.description"></textarea>
             </div>
             <div class="mb-3">
-                <label for="brandBlId" class="form-label">Brand Baselinker Id</label>
-                <input type="number" class="form-control" id="brandBlId" placeholder="Enter brand baselinker id" v-model="editedBrand.baselinkerId"/>
-            </div>
-            <div class="mb-3 d-flex justify-content-center">
-                <button type="button" class="btn btn-secondary mt-2">Get brands from baselinker</button>
+                <label for="brandBlId" class="form-label">Brand in Baselinker</label>
+                <select class="form-select" v-model="editedBrand.baselinkerId">
+                    <option :value="editedBrand.baselinkerId" disabled>Choose brand</option>
+                    <option v-for="brand in referenceDataStore.blBrands" :value="brand.manufacturer_id" :key="brand.manufacturer_id">{{ brand.name }}</option>
+                </select>
+                <!-- <input type="number" class="form-control" id="brandBlId" placeholder="Enter brand baselinker id" v-model="editedBrand.baselinkerId"/> -->
             </div>
         </template>
         <template #footer>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-secondary" @click="referenceDataStore.saveEditedBrand(editedBrand)">Save changes</button>
+            <button type="button" class="btn btn-secondary" @click="saveChanges(editedBrand)">Save changes</button>
         </template>
     </BaseModal>
 </template>
 
 <script setup>
 import BaseModal from '../base/BaseModal.vue';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useReferenceDataStore } from '@/stores/referenceDataStore.js';
 
 const referenceDataStore = useReferenceDataStore();
@@ -39,14 +40,21 @@ const editedBrand = ref({
     baselinkerId: null
 });
 
+onMounted(() => {
+  referenceDataStore.fetchBlBrands();
+});
+
 function openModal(brand) {
     editedBrand.value = brand;
   this.$refs.BrandModal.show();
 }
 function closeModal() {
-  this.$refs.BrandModal.hide();
+    BrandModal.value?.hide();
 }
-
+function saveChanges(brand) {
+  referenceDataStore.saveEditedBrand(brand);
+  closeModal();
+}
 defineExpose({
   openModal, closeModal
 });

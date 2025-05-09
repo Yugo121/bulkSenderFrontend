@@ -7,6 +7,7 @@ export const useReferenceDataStore = defineStore('referenceData', {
   state: () => ({
     parameters: [],
     brands: [],
+    blBrands: [],
     categories: [],
     blCategories: [],
     productsNotInBl: [],
@@ -29,6 +30,14 @@ export const useReferenceDataStore = defineStore('referenceData', {
         this.brands = res.data;
       }catch(error){
         console.error("Error fetching brands: ", error);
+      }
+    },
+    async fetchBlBrands() {
+      try{
+        const res = await axios.get('https://localhost:7144/api/baselinker/brands');
+        this.blBrands = res.data;
+      }catch(error){
+        console.error("Error fetching Baselinker brands: ", error);
       }
     },
     async saveEditedBrand(brand) {
