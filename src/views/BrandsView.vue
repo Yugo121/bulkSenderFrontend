@@ -7,7 +7,7 @@
             <div class="col-4">
             </div>
             <div class="col-4 d-flex justify-content-end">
-                <button class="btn btn-light">Get brands from baselinker</button>
+                <button class="btn btn-light" @click="referenceDataStore.addBrandsFromBaselinker()">Get brands from baselinker</button>
             </div>
         </div>
         <div class="row mb-3">
@@ -31,7 +31,10 @@
                         <td> {{ brand.description }} </td>
                         <td> {{ brand.baselinkerId }} </td>
                         <td>
-                            <button class="btn btn-secondary btn-sm" aria-label="Edit brand" @click="editBrand(brand)">Edit brand</button>
+                            <div class="d-grid gap-2 d-md-flex">
+                                <button class="btn btn-secondary btn-sm" aria-label="Edit brand" @click="editBrand(brand)">Edit</button>
+                                <button class="btn btn-danger btn-sm" aria-label="Delete brand" @click="referenceDataStore.deleteBrand(brand)">Delete</button> 
+                            </div>
                         </td>
                         </tr>
                     </tbody>

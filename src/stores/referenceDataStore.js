@@ -40,8 +40,40 @@ export const useReferenceDataStore = defineStore('referenceData', {
         console.error("Error fetching Baselinker brands: ", error);
       }
     },
+    async addBrandsFromBaselinker() {
+      await this.fetchBlBrands();
+      try {
+        for (const brand of this.blBrands) {
+
+          const brandDto = {
+            id: crypto.randomUUID(),
+            name: brand.name,
+            baselinkerId: brand.manufacturer_id,
+            description: "",
+          };
+
+          if(this.brands.some(b => b.name.toLowerCase() === brandDto.name.toLowerCase()) 
+            || this.brands.some(b => b.baselinkerId === brandDto.baselinkerId)) {
+            console.log("Brand already exists: ", brandDto.name);
+            continue;
+          }
+          console.log("Adding brand: ", brandDto);
+          const res = await axios.post('https://localhost:7144/api/brand', brandDto );
+        }
+      }catch (error) {
+        console.error("Error fetching brands from Baselinker: ", error);
+      }
+    },
+    async deleteBrand(brand) {
+      try {
+        const res = await axios.delete(`https://localhost:7144/api/brand/delete/${brand.id}`);
+        this.brands = this.brands.filter(b => b.id !== brand.id);
+        console.log("Brand deleted successfully: ", res.data);
+      } catch (error) {
+        console.error("Error deleting brand: ", error);
+      }
+    },
     async saveEditedBrand(brand) {
-      console.log("Brand to edit: ", brand);
       try {
         const res = await axios.put(`https://localhost:7144/api/brand/edit/${brand.id}`,  { brand });
       }catch(erroer){
@@ -60,6 +92,14 @@ export const useReferenceDataStore = defineStore('referenceData', {
         this.categories = (await axios.get('https://localhost:7144/api/categories/names')).data;
       } catch (e) {
         console.error(e);
+      }
+    },
+    async fetchCategories() {
+      try{
+        const res = await axios.get('https://localhost:7144/api/categories');
+        this.categories = res.data;
+      }catch(error){
+        console.error("Error fetching categories: ", error);
       }
     },
     async fetchBaselinkerCategories() {

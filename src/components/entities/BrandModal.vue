@@ -15,7 +15,6 @@
                     <option :value="editedBrand.baselinkerId" disabled>Choose brand</option>
                     <option v-for="brand in referenceDataStore.blBrands" :value="brand.manufacturer_id" :key="brand.manufacturer_id">{{ brand.name }}</option>
                 </select>
-                <!-- <input type="number" class="form-control" id="brandBlId" placeholder="Enter brand baselinker id" v-model="editedBrand.baselinkerId"/> -->
             </div>
         </template>
         <template #footer>
