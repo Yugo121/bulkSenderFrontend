@@ -20,7 +20,7 @@
                             <th scope="col">#</th>
                             <th scope="col">Baselinker name</th>
                             <th scope="col">Baselinker Id</th>
-                            <th scope="col">File name</th>
+                            <th scope="col">File aliases</th>
                             <th scope="col">Actions</th>
                         </tr>
                     </thead>
@@ -29,11 +29,10 @@
                         <th scope="row">{{ referenceDataStore.categories.indexOf(category) + 1}}</th>
                         <td> {{ category.baselinkerName }} </td>
                         <td> {{ category.baselinkerId }} </td>
-                        <td>{{ category.name }}</td>
+                        <td><p v-for="alias in category.aliases">{{ alias.name }}</p></td>
                         <td>
                             <div class="d-inline-flex gap-2">
-                                <button class="btn btn-secondary btn-sm" aria-label="Edit category">Edit</button>
-                                <button class="btn btn-danger btn-sm" aria-label="Delete category">Delete</button> 
+                                <button class="btn btn-danger btn-sm" aria-label="Delete category" @click="referenceDataStore.deleteCategory(category)">Delete</button> 
                             </div>
                         </td>
                         </tr>

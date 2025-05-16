@@ -1,5 +1,5 @@
 <template>
-    <h1 class="text-center">Send products in bulk</h1>
+    <h1 class="text-center my-3">Send products in bulk</h1>
     <div class="container">
       <div class="row">
         <div class="col"></div>
@@ -76,9 +76,6 @@
 </template>
 
 <script setup>
-//do zrobienia - pobranie kategorii oraz producentow z bla, logika przypisania ich id do encji z bazy, 
-// usunięcie bazy i zrobienie od zera, wysłanie pierwszych itemów do baselinker - to wszystko na backend, ale pisze tu bo prędzej zobacze xd
-// ponadto zapisywanie mappingu trzeba zmienić, żeby dla każdego rodzaju kategorii robiło sejwa - to już ogarnąć po stronie fronta
 import { useModalStore } from '@/stores/modalStore';
 import { usePaginationStore } from '@/stores/paginationStore';
 import { useMappingStore } from '@/stores/mappingStore';

@@ -24,6 +24,29 @@ export const useReferenceDataStore = defineStore('referenceData', {
         modalStore.modalAlertRef.openModal();
       }
     },
+    async deleteParameter(parameter) {
+      try{
+        console.log("Deleting parameter: ", parameter);
+        const res = await axios.delete(`https://localhost:7144/api/parameter/delete/${parameter.name}`);
+        this.parameters = this.parameters.filter(p => p.name !== parameter.name);
+        console.log("Parameter deleted successfully: ", res.data);
+      } catch (error) {
+        console.error("Error deleting parameter: ", error);
+      }
+    },
+
+    async addParameter(parameter) {
+      try {
+        console.log("Adding parameter: ", parameter);
+        const res = await axios.post('https://localhost:7144/api/parameter', parameter);
+        this.parameters.push(parameter);
+        console.log("Parameter added successfully: ", res.data);
+      } catch (error) {
+        console.error("Error adding parameter: ", error);
+      }
+    },
+
+    //brands actions
     async fetchBrands() {
       try{
         const res = await axios.get('https://localhost:7144/api/brands');
@@ -76,7 +99,7 @@ export const useReferenceDataStore = defineStore('referenceData', {
     async saveEditedBrand(brand) {
       try {
         const res = await axios.put(`https://localhost:7144/api/brand/edit/${brand.id}`,  { brand });
-      }catch(erroer){
+      }catch(error){
         console.error("Error saving edited brand: ", error);
       }
     },
@@ -87,6 +110,8 @@ export const useReferenceDataStore = defineStore('referenceData', {
         console.error(e);
       }
     },
+
+    //categories actions
     async getCategoriesNames() {
       try {
         this.categories = (await axios.get('https://localhost:7144/api/categories/names')).data;
@@ -97,6 +122,7 @@ export const useReferenceDataStore = defineStore('referenceData', {
     async fetchCategories() {
       try{
         const res = await axios.get('https://localhost:7144/api/categories');
+        console.log("Fetched categories: ", res.data);
         this.categories = res.data;
       }catch(error){
         console.error("Error fetching categories: ", error);
@@ -110,6 +136,24 @@ export const useReferenceDataStore = defineStore('referenceData', {
       }
       return this.blCategories;
     },
+    async deleteCategory(category) {
+      try {
+        const res = await axios.delete(`https://localhost:7144/api/category/delete/${category.id}`);
+        this.categories = this.categories.filter(c => c.id !== category.id);
+        console.log("Category deleted successfully: ", res.data);
+      } catch (error) {
+        console.error("Error deleting category: ", error);
+      }
+    },
+    async saveEditedCategory(category) {
+      try {
+        const res = await axios.put(`https://localhost:7144/api/category/edit/${category.id}`,  { category });
+      }catch(error){
+        console.error("Error saving edited category: ", error);
+      }
+    },
+
+    //products actions
     async sendProductsToBaselinker(products) {
       console.log("Sending products to Baselinker: ", products);
       for (const product of products) {

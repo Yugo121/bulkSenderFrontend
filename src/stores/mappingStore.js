@@ -46,8 +46,9 @@ export const useMappingStore = defineStore('mapping', {
       const combined = {
         ...this.selectedProductMappings,
         ...this.selectedParameterMappings,
-        category: { name: this.selectedProductMappings.category }
+        category: { name: this.selectedProductMappings.category },
       };
+      console.log("Combined mappings: ", combined);
       modalStore.mapFileItemRef.closeModal();
       this.createProductPayload(combined);
     },
@@ -63,7 +64,7 @@ export const useMappingStore = defineStore('mapping', {
         const mapped = {};
         for (const [target, column] of Object.entries(combinedMappings)) {
           if (target === 'category') {
-            mapped[target] = { id: 0, name: row[column.name], baselinkerId: 0, baselinkerName: "" };
+            mapped[target] = { id: 0, aliases: [row[column.name]], baselinkerId: 0, baselinkerName: "" };
           } else if (target === 'brand') {
             mapped[target] = this.selectedProductMappings.brand;
           } else {
@@ -79,9 +80,22 @@ export const useMappingStore = defineStore('mapping', {
       const modalStore = useModalStore();
       const referenceDataStore = useReferenceDataStore();
       try {
-        const flatProducts = this.products.map(p => this.flattenProduct(p));
+        let flatProducts = this.products.map(p => this.flattenProduct(p));
+
+        const allKeys = Array.from(
+          new Set(flatProducts.flatMap(prod => Object.keys(prod)))
+        );
+
+        flatProducts = flatProducts.map(prod => {
+          allKeys.forEach(key => {
+            if (prod[key] == null) {
+              prod[key] = "";
+            }
+          });
+          return prod;
+        });
+
         payload.products = flatProducts;
-        console.log("Payload: ", payload);
         await axios.post('https://localhost:7144/api/products/csv', payload);
         modalStore.categoryModalRef.closeModal();
         if (this.saveMapping)
@@ -99,7 +113,6 @@ export const useMappingStore = defineStore('mapping', {
     getChoosedMapping(mappingName) { 
       axios.get(`https://localhost:7144/api/mappings/${mappingName}`)
         .then(response => {
-          console.log("Mapping data: ", response.data);
           this.selectedProductMappings = response.data.mappingEntriesDTO
             .filter(entry => entry.mappingType === 0)
             .reduce((acc, entry) => {
@@ -121,13 +134,43 @@ export const useMappingStore = defineStore('mapping', {
       const modalStore = useModalStore();
       const csvStore = useCsvStore();
       const referenceDataStore = useReferenceDataStore();
+
+      const categoryId = crypto.randomUUID();
+
+       const rawAliasValue = csvStore.rawCsvData[0][this.selectedProductMappings.category];
+       const aliasNames = Array.isArray(rawAliasValue)
+        ? rawAliasValue
+        : [rawAliasValue];
+
+      const aliases = aliasNames.map(name => ({
+        id: crypto.randomUUID(),
+        name: name,
+        categoryId: categoryId
+      }));
+
+        const aliasToMatch = this.selectedProductMappings.category;
+        const matchingProduct = this.productsPayload.products.find(p =>
+          p.category.aliases.some(a => a === aliasToMatch))
+
+          const baselinkerId = matchingProduct?.category.baselinkerId || "";
+
+          console.log("Baselinker ID: ", baselinkerId);
+
       this.mappingPayload = {
         id: crypto.randomUUID(),
         name: '',
         description: '',
         title: '',
-        category: { id:crypto.randomUUID(), name: csvStore.rawCsvData[0][this.selectedProductMappings.category], baselinkerId:0 , baselinkerName: "" },
-        brand: { id:crypto.randomUUID(), name: this.selectedProductMappings.brand, baselinkerId:0, description: "" },
+        category: { 
+          id: categoryId, 
+          aliases: aliases, 
+          baselinkerId: baselinkerId, 
+          baselinkerName: "" },
+        brand: { 
+          id:crypto.randomUUID(), 
+          name: this.selectedProductMappings.brand,
+          baselinkerId:0, 
+          description: "" },
         mappingEntriesDTO: [
           ...Object.entries(this.selectedProductMappings).map(([k,v]) => ({ id: crypto.randomUUID(), targetField:k, columnName:v, mappingType:0 })),
           ...Object.entries(this.selectedParameterMappings).map(([k,v]) => ({ id: crypto.randomUUID(), targetField:k, columnName:v, mappingType:1 }))
@@ -152,18 +195,23 @@ export const useMappingStore = defineStore('mapping', {
     assignCategoryIdInBl(catInFileName, value) {
       const existing = this.productsPayload.products.find(item => item.category.name === catInFileName);
           this.productsPayload.products.forEach(product => {
-            if (product.category.name === catInFileName) {
-              console.log("vALUE PARAMETER : ", value);
+            if (product.category.aliases.includes(catInFileName)) {
                 product.category.baselinkerId = value.category_id;
                 product.category.baselinkerName = value.name;
+                if(!product.category.aliases.includes(catInFileName))
+                  product.category.aliases.push(catInFileName);
             }
         });
     },
     getCategoriesFromFile() {
-      let categoriesNames = this.products.map(p => p.category?.name || 'Undefined category!');
-      const unique = Array.from(new Set(categoriesNames));
+      let categoriesNames = new Set();
+      this.products.forEach(p => {
+        if (p.category?.aliases) {
+          p.category.aliases.forEach(alias => categoriesNames.add(alias));
+        }
+      });
 
-      return unique;
+      return Array.from(categoriesNames);  
     },
     flattenProduct(product) {
       const flatProduct = {};
