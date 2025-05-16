@@ -10,6 +10,7 @@ export const useModalStore = defineStore('modal', {
     brandModalRef: null,
     modalInstance: null,
     categoryModalRef: null,
+    parameterModalRef: null,
   }),
   actions: {
     setMapFileItemRef(ref) {
@@ -27,5 +28,8 @@ export const useModalStore = defineStore('modal', {
     setBrandModalRef(ref) {
       this.brandModalRef = ref;
     },
+    setParameterModalRef(ref) {
+      this.parameterModalRef = ref;
+    }
   }
 });

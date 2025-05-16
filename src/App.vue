@@ -16,6 +16,10 @@
                 <router-link to="/categories" :class="['nav-link', { active: $route.path === '/categories' }]">Categories</router-link>
               </li>
               <li class="nav-item">
+                <router-link to="/parameters" :class="['nav-link', { active: $route.path === '/parameters' }]">Parameters</router-link>
+              </li>
+
+              <li class="nav-item">
                 <router-link to="/settings" :class="['nav-link', { active: $route.path === '/settings' }]">Settings</router-link>
               </li>
             </ul>
