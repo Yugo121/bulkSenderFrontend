@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 export const usePaginationStore = defineStore('pagination', {
   state: () => ({
     currentPage: 1,
-    itemsPerPage: 10,
+    itemsPerPage: 30,
     totalItems: 0,
     extraPages: 0,
     pageBlockSize: 3
