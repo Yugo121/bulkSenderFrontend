@@ -155,6 +155,8 @@ export const useReferenceDataStore = defineStore('referenceData', {
 
     //products actions
     async sendProductsToBaselinker(products) {
+
+      // zmienić metodę na requestQueue
       console.log("Sending products to Baselinker: ", products);
       for (const product of products) {
         console.log("Sending product: ", product);

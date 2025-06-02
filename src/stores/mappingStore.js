@@ -4,6 +4,7 @@ import { usePaginationStore } from './paginationStore';
 import { useModalStore } from './modalStore';
 import { useCsvStore } from './csvStore';
 import axios from 'axios';
+import { toRaw } from 'vue';
 
 export const useMappingStore = defineStore('mapping', {
   state: () => ({
@@ -12,6 +13,7 @@ export const useMappingStore = defineStore('mapping', {
     savedMappings: [],
     avaibleFields: ['name', 'sku', 'ean', 'price', 'quantity', 'description', 'category', 'brand'],
     saveMapping: true,
+    mappingPayloads: [],
     mappingPayload: {},
     mappedCategories: [],
     products: [],
@@ -37,6 +39,8 @@ export const useMappingStore = defineStore('mapping', {
 
   },
   actions: {
+    //product mappings
+
     updateMapping(field, value) {
       const target = this.isFirstPage ? 'selectedProductMappings' : 'selectedParameterMappings';
       this[target][field] = value;
@@ -106,6 +110,8 @@ export const useMappingStore = defineStore('mapping', {
         console.error(e);
       }
     },
+
+    //mapping actions
     async getSavedMappingsNames() {
       this.savedMappings = (await axios.get('https://localhost:7144/api/mappings/names')).data;
       return this.savedMappings;
@@ -113,18 +119,20 @@ export const useMappingStore = defineStore('mapping', {
     getChoosedMapping(mappingName) { 
       axios.get(`https://localhost:7144/api/mappings/${mappingName}`)
         .then(response => {
+          console.log("Mapping response: ", response);
           this.selectedProductMappings = response.data.mappingEntriesDTO
-            .filter(entry => entry.mappingType === 0)
+            .filter(entry => entry.mappingType === 'Product')
             .reduce((acc, entry) => {
               acc[entry.targetField] = entry.columnName;
               return acc;
             }, {});
           this.selectedParameterMappings = response.data.mappingEntriesDTO
-            .filter(entry => entry.mappingType === 1)
+            .filter(entry => entry.mappingType === 'Parameter')
             .reduce((acc, entry) => {
               acc[entry.targetField] = entry.columnName;
               return acc;
             }, {});
+            console.log("Selected product mappings: ", this.selectedProductMappings);
         })
         .catch(error => {
           console.error('Error fetching chosen mapping:', error);
@@ -132,40 +140,25 @@ export const useMappingStore = defineStore('mapping', {
     },
     createMappingPayload() {
       const modalStore = useModalStore();
-      const csvStore = useCsvStore();
       const referenceDataStore = useReferenceDataStore();
+    let uniqueCategories = [];
 
-      const categoryId = crypto.randomUUID();
+    let seenNames = new Set();
 
-       const rawAliasValue = csvStore.rawCsvData[0][this.selectedProductMappings.category];
-       const aliasNames = Array.isArray(rawAliasValue)
-        ? rawAliasValue
-        : [rawAliasValue];
+    for (let product of this.products) {
+      if (product.category && !seenNames.has(product.category.baselinkerName)) {
+        seenNames.add(product.category.baselinkerName);
+        uniqueCategories.push(product.category);
+      }
+    }
 
-      const aliases = aliasNames.map(name => ({
-        id: crypto.randomUUID(),
-        name: name,
-        categoryId: categoryId
-      }));
-
-        const aliasToMatch = this.selectedProductMappings.category;
-        const matchingProduct = this.productsPayload.products.find(p =>
-          p.category.aliases.some(a => a === aliasToMatch))
-
-          const baselinkerId = matchingProduct?.category.baselinkerId || "";
-
-          console.log("Baselinker ID: ", baselinkerId);
-
+    for(let category of uniqueCategories) {
       this.mappingPayload = {
         id: crypto.randomUUID(),
         name: '',
         description: '',
         title: '',
-        category: { 
-          id: categoryId, 
-          aliases: aliases, 
-          baselinkerId: baselinkerId, 
-          baselinkerName: "" },
+        category: toRaw(category),
         brand: { 
           id:crypto.randomUUID(), 
           name: this.selectedProductMappings.brand,
@@ -176,22 +169,35 @@ export const useMappingStore = defineStore('mapping', {
           ...Object.entries(this.selectedParameterMappings).map(([k,v]) => ({ id: crypto.randomUUID(), targetField:k, columnName:v, mappingType:1 }))
         ]
       };
+
+      this.mappingPayload.category.id = crypto.randomUUID();
+      this.mappingPayload.category.aliases = this.mappingPayload.category.aliases.map(name => ({
+        id: crypto.randomUUID(),
+        name: name,
+        categoryId: this.mappingPayload.category.id
+      }));
+      this.mappingPayloads.push(this.mappingPayload);
+    }
       modalStore.mappingMetaModalRef.show();
       referenceDataStore.getProductsNotInBaselinker(1, 20);
     },
-    sendSavedMapping() {
+    async sendSavedMappings() {
       const modalStore = useModalStore();
 
-      console.log("Mapping payload: ", this.mappingPayload);
-      axios.post('https://localhost:7144/api/mappings', this.mappingPayload)
-      .then(response => {
-          console.log("Mapping saved successfully!", response);
-      })
-      .catch(error => {
-        console.error("Error occurred during saving mapping: ", error);
-      });
+      for(let payload of this.mappingPayloads) {
+        await axios.post('https://localhost:7144/api/mappings', payload)
+        .then(response => {
+            console.log("Mapping saved successfully!", response);
+        })
+        .catch(error => {
+          console.error("Error occurred during saving mapping: ", error);
+        }); 
+      }
+
       modalStore.mappingMetaModalRef.closeModal();
     },
+
+    //category actions
     assignCategoryIdInBl(catInFileName, value) {
       const existing = this.productsPayload.products.find(item => item.category.name === catInFileName);
           this.productsPayload.products.forEach(product => {
@@ -213,6 +219,8 @@ export const useMappingStore = defineStore('mapping', {
 
       return Array.from(categoriesNames);  
     },
+
+    //product actions
     flattenProduct(product) {
       const flatProduct = {};
     
