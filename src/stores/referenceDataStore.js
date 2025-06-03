@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { useModalStore } from './modalStore'; 
 import { useProductStore } from './productStore';
+import { RequestQueue } from '@/utils/requestQueue';
 import axios from 'axios';
 
 export const useReferenceDataStore = defineStore('referenceData', {
@@ -11,7 +12,17 @@ export const useReferenceDataStore = defineStore('referenceData', {
     categories: [],
     blCategories: [],
     productsNotInBl: [],
+    sentCount: 0,
+    totalCount: 0,
+    isUploading: false,
+    queue: null
   }),
+  getters: {
+    uploadProgressPercent: (state) => {
+      if (state.totalCount === 0) return 0;
+      return Math.round((state.sentCount / state.totalCount) * 100);
+    }
+  },
   actions: {
     async fetchParameters() {
       const modalStore = useModalStore(); 
@@ -154,12 +165,9 @@ export const useReferenceDataStore = defineStore('referenceData', {
     },
 
     //products actions
-    async sendProductsToBaselinker(products) {
-
-      // zmienić metodę na requestQueue
-      console.log("Sending products to Baselinker: ", products);
-      for (const product of products) {
-        console.log("Sending product: ", product);
+    async sendProductToBaselinker(product) {
+      
+      console.log("Sending product to Baselinker: ", product);
         try {
           const response = await axios.post(
             'https://localhost:7144/api/baselinker/products',
@@ -168,9 +176,7 @@ export const useReferenceDataStore = defineStore('referenceData', {
           console.log("Product sent successfully!", response);
         } catch (error) {
           console.error("Error occurred during sending product: ", error);
-          continue;
         }
-      }
       console.log("All done");
     },
     async getProductsNotInBaselinker(page, quantity) {
@@ -193,5 +199,35 @@ export const useReferenceDataStore = defineStore('referenceData', {
         console.error(e);
       }
     },
+    initQueue() {
+      this.queue = new RequestQueue(40, (completed, total) => {
+        this.sentCount = completed;
+        this.totalCount = total;
+      });
+    },
+    async startSending(products) {
+      if(this.isUploading) {
+        console.warn("Upload is already in progress.");
+        return;
+      }
+      this.isUploading = true;
+      this.sentCount = 0;
+      this.totalCount = products.length;
+
+      if(!this.queue) {
+        this.initQueue();
+      }
+
+      for(const product of products) {
+        this.queue.enqueue(() => this.sendProductToBaselinker(product));
+      }
+
+      const checkFinish = setInterval(() => {
+        if(this.queue.completed === this.queue.totalRequests) {
+          this.isUploading = false;
+          clearInterval(checkFinish);
+        };
+      }, 500);
+    }
   }
 });
