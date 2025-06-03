@@ -20,6 +20,15 @@
         </div>
         <div class="col"></div>
       </div>
+      <div class="row">
+        <div class="col"></div>
+        <div class="col-10">
+          <div v-if="referenceDataStore.isUploading" class="progress" role="progressbar">
+            <div class="progress-bar" :style="{ width: referenceDataStore.uploadProgressPercent + '%' }">Sending... {{ referenceDataStore.uploadProgressPercent + '%' }} </div>
+          </div>
+        </div>
+        <div class="col"></div>
+      </div>
       <div v-if="productStore.productsNotInBl.length > 0 && productStore.showNotSent" class="row">
         <div class="col"></div>
         <div class="col-10">
@@ -67,7 +76,7 @@
           </div>
         </div>
         <div class="col">
-          <button @click="referenceDataStore.sendProductsToBaselinker(productStore.productsNotInBl)" class="btn btn-light">Send to baselinker!</button>
+          <button @click="referenceDataStore.startSending(productStore.productsNotInBl)" class="btn btn-light">Send to baselinker!</button>
         </div>
       </div>
     </div>
@@ -76,9 +85,10 @@
 </template>
 
 <script setup>
+
+//paginacja jakaś pojebana, poprawić
 import { useModalStore } from '@/stores/modalStore';
 import { usePaginationStore } from '@/stores/paginationStore';
-import { useMappingStore } from '@/stores/mappingStore';
 import { useCsvStore } from '@/stores/csvStore';
 import { useReferenceDataStore } from '@/stores/referenceDataStore';
 import { useProductStore } from '@/stores/productStore';
@@ -87,7 +97,6 @@ import ModalAlert from '@/components/ModalAlert.vue';
 import MapFileItem from '@/components/mapping/MapFileItem.vue';
 
 const modalStore = useModalStore();
-const mappingStore = useMappingStore();
 const referenceDataStore = useReferenceDataStore();
 const paginationStore = usePaginationStore();
 const csvStore = useCsvStore();
