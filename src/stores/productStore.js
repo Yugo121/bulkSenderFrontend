@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { useReferenceDataStore } from './referenceDataStore';
+import { usePaginationStore } from './paginationStore';
 
 export const useProductStore = defineStore('product', {
     state: () => ({
@@ -7,10 +7,8 @@ export const useProductStore = defineStore('product', {
         productsNotInBlCount: 0,
         showNotSent: false,
     }),
-    getters: {
-        getNotSentProductCount() {
-            const referenceDataStore = useReferenceDataStore();
-           this.productsNotInBlCount = referenceDataStore.getProductsNotInBaselinkerCount();
+    actions: {
+         fetchNotSentProductCount(count) {
            return this.productsNotInBlCount;
         }
     }

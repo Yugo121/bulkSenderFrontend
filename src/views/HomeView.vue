@@ -26,6 +26,20 @@
           <div v-if="referenceDataStore.isUploading" class="progress" role="progressbar">
             <div class="progress-bar" :style="{ width: referenceDataStore.uploadProgressPercent + '%' }">Sending... {{ referenceDataStore.uploadProgressPercent + '%' }} </div>
           </div>
+          <div v-if="!referenceDataStore.queue && productStore.productsNotInBl.length > 0" class="text-center">
+            <button @click="referenceDataStore.startSending(productStore.productsNotInBl)" class="btn btn-light">Send to baselinker!</button>
+          </div>
+          <div v-if="referenceDataStore.queue">
+          <div v-if="referenceDataStore.queue.processing" class="d-flex justify-content-center gap-2 my-3">
+            <button @click="referenceDataStore.pauseQueue()" class="btn btn-light">Pause</button>
+            <button @click="referenceDataStore.cancelQueue()" class="btn btn-danger">Cancel</button>
+          </div>
+          <div v-else-if="referenceDataStore.queue.paused" class="d-flex justify-content-center gap-2 my-3">
+            <button @click="referenceDataStore.resumeQueue()" class="btn btn-light">Resume</button>
+            <button @click="referenceDataStore.cancelQueue()" class="btn btn-danger">Cancel</button>
+          </div>
+
+          </div>
         </div>
         <div class="col"></div>
       </div>
@@ -75,9 +89,7 @@
             </nav>          
           </div>
         </div>
-        <div class="col">
-          <button @click="referenceDataStore.startSending(productStore.productsNotInBl)" class="btn btn-light">Send to baselinker!</button>
-        </div>
+        <div class="col"></div>
       </div>
     </div>
     <MapFileItem ref="mapFileItem" />
@@ -88,17 +100,19 @@
 
 //paginacja jakaś pojebana, poprawić
 import { useModalStore } from '@/stores/modalStore';
-import { usePaginationStore } from '@/stores/paginationStore';
+import { useHomeViewPaginationStore } from '@/stores/homeViewPaginationStore';
 import { useCsvStore } from '@/stores/csvStore';
 import { useReferenceDataStore } from '@/stores/referenceDataStore';
 import { useProductStore } from '@/stores/productStore';
+
 import { ref, onMounted } from 'vue';
+
 import ModalAlert from '@/components/ModalAlert.vue';
 import MapFileItem from '@/components/mapping/MapFileItem.vue';
 
 const modalStore = useModalStore();
 const referenceDataStore = useReferenceDataStore();
-const paginationStore = usePaginationStore();
+const paginationStore = useHomeViewPaginationStore();
 const csvStore = useCsvStore();
 const productStore = useProductStore();
 const modalAlert = ref(null);
@@ -107,6 +121,7 @@ const mapFileItem = ref(null);
 onMounted(() => {
   modalStore.setModalAlertRef(modalAlert.value);
   modalStore.setMapFileItemRef(mapFileItem.value);
+  paginationStore.setTotalItems();
 });
 
 function nextPage() {

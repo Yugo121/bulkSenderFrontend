@@ -1,12 +1,14 @@
 import { defineStore } from 'pinia';
+import { useReferenceDataStore } from './referenceDataStore';
+import { useProductStore } from './productStore';
 
-export const usePaginationStore = defineStore('pagination', {
+export const useHomeViewPaginationStore = defineStore('homeViewPagination', {
   state: () => ({
     currentPage: 1,
     itemsPerPage: 50,
     totalItems: 0,
     extraPages: 0,
-    pageBlockSize: 3
+    pageBlockSize: 5
   }),
   getters: {
     totalPages(state) {
@@ -30,8 +32,11 @@ export const usePaginationStore = defineStore('pagination', {
     }
   },
   actions: {
-    setTotalItems(count) {
-      this.totalItems = count
+    async setTotalItems() {
+      const referenceDataStore = useReferenceDataStore();
+      const productStore = useProductStore();
+      await referenceDataStore.getProductsNotInBaselinkerCount();
+      this.totalItems = productStore.productsNotInBlCount;
       if (this.currentPage > this.totalPages) {
         this.currentPage = this.totalPages
       }
