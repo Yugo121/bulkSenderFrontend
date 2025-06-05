@@ -166,7 +166,6 @@ export const useReferenceDataStore = defineStore('referenceData', {
 
     //products actions
     async sendProductToBaselinker(product) {
-      
       console.log("Sending product to Baselinker: ", product);
         try {
           const response = await axios.post(
@@ -186,6 +185,7 @@ export const useReferenceDataStore = defineStore('referenceData', {
         console.log("Products not in Baselinker: ", res.data);
         productStore.productsNotInBl = res.data;
         productStore.showNotSent = true;
+        
       } catch (e) {
         console.error(e);
       }
@@ -195,10 +195,13 @@ export const useReferenceDataStore = defineStore('referenceData', {
         const productStore = useProductStore();
         const res = await axios.get('https://localhost:7144/api/products/search/notInBl/all');
         productStore.productsNotInBlCount = res.data;
+        console.log("Products not in Baselinker count: ", productStore.productsNotInBlCount);
       } catch (e) {
         console.error(e);
       }
     },
+
+    //queue actions
     initQueue() {
       this.queue = new RequestQueue(40, (completed, total) => {
         this.sentCount = completed;
@@ -206,6 +209,8 @@ export const useReferenceDataStore = defineStore('referenceData', {
       });
     },
     async startSending(products) {
+      const productStore = useProductStore();
+
       if(this.isUploading) {
         console.warn("Upload is already in progress.");
         return;
@@ -217,17 +222,42 @@ export const useReferenceDataStore = defineStore('referenceData', {
       if(!this.queue) {
         this.initQueue();
       }
-
+      
       for(const product of products) {
-        this.queue.enqueue(() => this.sendProductToBaselinker(product));
+        this.queue.enqueue(async () => {
+          await this.sendProductToBaselinker(product);
+
+          const productId = productStore.productsNotInBl.findIndex(p => p.id === product.id);
+          if(productId !== -1) {
+            productStore.productsNotInBl.splice(productId, 1);
+          }
+          
+        });
       }
 
       const checkFinish = setInterval(() => {
-        if(this.queue.completed === this.queue.totalRequests) {
+        if(!this.queue || this.queue.completed === this.queue.totalRequests) {
           this.isUploading = false;
           clearInterval(checkFinish);
         };
       }, 500);
+    },
+    pauseQueue() {
+      if(this.queue) {
+        this.queue.pause();
+      }
+    },
+    resumeQueue() {
+      if(this.queue) {
+        this.queue.resume();
+      }
+    },
+    cancelQueue() {
+      if(this.queue) {
+        this.queue.cancel();
+        this.isUploading = false;
+        this.queue = null;
+      }
     }
   }
 });
