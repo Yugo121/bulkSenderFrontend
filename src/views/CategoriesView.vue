@@ -7,7 +7,7 @@
             <div class="col-4">
             </div>
             <div class="col-4 d-flex justify-content-end">
-                <button class="btn btn-light">Get categories from baselinker</button>
+                <button class="btn btn-light">Get categories from baselinker</button> <!-- This button should trigger a method to fetch categories from Baselinker -->
             </div>
         </div>
         <div class="row mb-3">
