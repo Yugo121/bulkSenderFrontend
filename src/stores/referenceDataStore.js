@@ -147,6 +147,29 @@ export const useReferenceDataStore = defineStore('referenceData', {
       }
       return this.blCategories;
     },
+    async addBaselinkerCategories() {
+      await this.fetchBaselinkerCategories();
+      try {
+        for (const category of this.blCategories) {
+          console.log("Processing Baselinker category: ", category);
+          const categoryDto = {
+            id: crypto.randomUUID(),
+            baselinkerName: category.name,
+            baselinkerId: category.category_id,
+          };
+
+          if(this.categories.some(c => c.name.toLowerCase() === categoryDto.name.toLowerCase()) 
+            || this.categories.some(c => c.baselinkerId === categoryDto.baselinkerId)) {
+            console.log("Category already exists: ", categoryDto.name);
+            continue;
+          }
+          console.log("Adding category: ", categoryDto);
+          //const res = await axios.post('https://localhost:7144/api/category', categoryDto );
+        }
+      }catch (error) {
+        console.error("Error fetching categories from Baselinker: ", error);
+      }
+    },
     async deleteCategory(category) {
       try {
         const res = await axios.delete(`https://localhost:7144/api/category/delete/${category.id}`);
