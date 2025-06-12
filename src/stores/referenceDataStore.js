@@ -223,6 +223,18 @@ export const useReferenceDataStore = defineStore('referenceData', {
         console.error(e);
       }
     },
+    async sendEditedProduct(product) {
+      console.log("Sending edited product to Baselinker: ", product);
+      try {
+        const response = await axios.put(
+          'https://localhost:7144/api/baselinker/products',
+          product
+        );
+        console.log("Product sent successfully!", response);
+      } catch (error) {
+        console.error("Error occurred during sending edited product: ", error);
+      }
+    },
 
     //queue actions
     initQueue() {
