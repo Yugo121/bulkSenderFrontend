@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { usePaginationStore } from './paginationStore';
+import { useReferenceDataStore } from './referenceDataStore';
 
 export const useProductStore = defineStore('product', {
     state: () => ({
@@ -8,8 +8,15 @@ export const useProductStore = defineStore('product', {
         showNotSent: false,
     }),
     actions: {
-         fetchNotSentProductCount(count) {
-           return this.productsNotInBlCount;
+        saveEditedProduct(product) {
+            const referenceDataStore = useReferenceDataStore();
+            const index = this.productsNotInBl.findIndex(p => p.id === product.id);
+            if (index !== -1) {
+                this.productsNotInBl[index] = product;
+                referenceDataStore.saveEditedProduct(product);
+            } else {
+                this.productsNotInBl.push(product);
+            }
         }
     }
 });

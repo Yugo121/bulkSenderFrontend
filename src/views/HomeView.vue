@@ -65,7 +65,7 @@
                   <td> {{ product.sku }}</td>
                   <td> {{ product.name }}</td>
                   <td>
-                    <button class="btn btn-secondary" aria-label="Edit product" :value="product.id">Edit product</button>
+                    <button class="btn btn-secondary" aria-label="Edit product" :value="product.id" @click="editProduct(product)">Edit product</button>
                   </td>
                 </tr>
               </tbody>
@@ -93,12 +93,11 @@
       </div>
     </div>
     <MapFileItem ref="mapFileItem" />
+    <ProductModal ref="productModal" />
     <ModalAlert ref="modalAlert" :message="modalStore.modalMessage"/>
 </template>
 
 <script setup>
-
-//paginacja jakaś pojebana, poprawić
 import { useModalStore } from '@/stores/modalStore';
 import { useHomeViewPaginationStore } from '@/stores/homeViewPaginationStore';
 import { useCsvStore } from '@/stores/csvStore';
@@ -109,6 +108,7 @@ import { ref, onMounted } from 'vue';
 
 import ModalAlert from '@/components/ModalAlert.vue';
 import MapFileItem from '@/components/mapping/MapFileItem.vue';
+import ProductModal from '@/components/entities/ProductModal.vue';
 
 const modalStore = useModalStore();
 const referenceDataStore = useReferenceDataStore();
@@ -117,10 +117,12 @@ const csvStore = useCsvStore();
 const productStore = useProductStore();
 const modalAlert = ref(null);
 const mapFileItem = ref(null);
+const productModal = ref(null);
 
 onMounted(() => {
   modalStore.setModalAlertRef(modalAlert.value);
   modalStore.setMapFileItemRef(mapFileItem.value);
+  modalStore.setProductModalRef(productModal.value);
   paginationStore.setTotalItems();
 });
 
@@ -135,6 +137,9 @@ function prevPage() {
 function showPage(page) {
   paginationStore.goToPage(page);
   referenceDataStore.getProductsNotInBaselinker(paginationStore.currentPage, paginationStore.itemsPerPage);
+}
+function editProduct(product) {
+  productModal.value.openModal(product);
 }
 </script>
 
