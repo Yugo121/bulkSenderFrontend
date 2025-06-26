@@ -156,15 +156,16 @@ export const useReferenceDataStore = defineStore('referenceData', {
             id: crypto.randomUUID(),
             baselinkerName: category.name,
             baselinkerId: category.category_id,
+            aliases: [{name: ""}]
           };
 
-          if(this.categories.some(c => c.name.toLowerCase() === categoryDto.name.toLowerCase()) 
+          if(this.categories.some(c => c.baselinkerName.toLowerCase() === categoryDto.baselinkerName.toLowerCase()) 
             || this.categories.some(c => c.baselinkerId === categoryDto.baselinkerId)) {
             console.log("Category already exists: ", categoryDto.name);
             continue;
           }
           console.log("Adding category: ", categoryDto);
-          //const res = await axios.post('https://localhost:7144/api/category', categoryDto );
+          const res = await axios.post('https://localhost:7144/api/category', categoryDto );
         }
       }catch (error) {
         console.error("Error fetching categories from Baselinker: ", error);
