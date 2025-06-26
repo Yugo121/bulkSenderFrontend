@@ -28,11 +28,11 @@
             </div>
             <div class="mb-3">
                 <label for="product-categoryId" class="form-label">Category id</label>
-                <input type="select" class="form-control" id="product-categoryId" placeholder="Category id" v-model="editedProduct.category.id" />
+                <input type="select" class="form-control" id="product-categoryId" placeholder="Category id" />
             </div>
             <div class="mb-3">
                 <label for="product-brandId" class="form-label">Brand id</label>
-                <input type="select" class="form-control" id="product-brandId" placeholder="Brand id" v-model="editedProduct.brand.id" />
+                <input type="select" class="form-control" id="product-brandId" placeholder="Brand id" />
             </div>
         </template>
 

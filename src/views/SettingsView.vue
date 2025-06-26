@@ -22,10 +22,22 @@
             </div>
             <div class="col-2"></div>
         </div>
+            <div class="row">
+                <div class="col-2"></div>
+                <div class="col-8">
+                    <label for="file" class="form-label">Choose products from baselinker to send: </label>
+                    <input type="file" @change="productStore.handleFileUpload"  class="form-control" id="file" placeholder="File" accept=".csv" />
+                </div>
+                <div class="col-2"></div>
+            </div>
     </div>
 </template>
 
 <script setup>
+import { useProductStore } from '@/stores/productStore.js'
+
+const productStore = useProductStore()
+//@change="productStore.send"
 const token = "123Test"
 const catalogueId = "123Test"
 const warehouseId = "123Test"
