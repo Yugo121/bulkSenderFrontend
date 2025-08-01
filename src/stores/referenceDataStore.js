@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { useModalStore } from './modalStore'; 
 import { useProductStore } from './productStore';
+import { usePaginationStore } from './paginationStore';
 import { RequestQueue } from '@/utils/requestQueue';
 import axios from 'axios';
 
@@ -236,6 +237,22 @@ export const useReferenceDataStore = defineStore('referenceData', {
         console.error("Error occurred during sending edited product: ", error);
       }
     },
+    async deleteNotInBl(products) {
+      const productStore = useProductStore();
+      try {
+        for (const product of products) {
+          console.log("Deleting product not in Baselinker: ", product);
+          await axios.delete(`https://localhost:7144/api/product/delete/${product.id}`);
+          const index = productStore.productsNotInBl.findIndex(p => p.id === product.id);
+          if (index !== -1) {
+            productStore.productsNotInBl.splice(index, 1);
+          }
+        }
+        console.log("Products deleted successfully.");
+      } catch (error) {
+        console.error("Error occurred during deleting products: ", error);
+      }
+    },
 
     //queue actions
     initQueue() {
@@ -246,6 +263,8 @@ export const useReferenceDataStore = defineStore('referenceData', {
     },
     async startSending(products) {
       const productStore = useProductStore();
+      const referenceDataStore = useReferenceDataStore();
+      const paginationStore = usePaginationStore();
 
       if(this.isUploading) {
         console.warn("Upload is already in progress.");
@@ -277,6 +296,8 @@ export const useReferenceDataStore = defineStore('referenceData', {
           clearInterval(checkFinish);
         };
       }, 500);
+
+      referenceDataStore.getProductsNotInBaselinker(paginationStore.currentPage, paginationStore.itemsPerPage);
     },
     pauseQueue() {
       if(this.queue) {

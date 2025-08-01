@@ -5,19 +5,19 @@
             <div class="col-2"></div>
             <div class="col-8">
                 <div class="form-floating mb-3">
-                    <input type="password" class="form-control" id="baselinkerToken" :placeholder="token" :value="token" />
+                    <input v-model="settings.token" type="password" class="form-control" id="baselinkerToken" :placeholder="token" :value="token" />
                     <label for="baselinkerToken">Baselinker token</label>
                 </div>
                 <div class="form-floating mb-3">
-                    <input type="text" class="form-control" id="catalogueId" :placeholder="catalogueId" :value="catalogueId" />
+                    <input v-model="settings.catalogueId" type="text" class="form-control" id="catalogueId" :placeholder="catalogueId" :value="catalogueId" />
                     <label for="catalogueId">Katalog id</label>
                 </div>
                 <div class="form-floating mb-3">
-                    <input type="text" class="form-control" id="warehouseId" :placeholder="warehouseId" :value="warehouseId" />
+                    <input v-model="settings.warehouseId" type="text" class="form-control" id="warehouseId" :placeholder="warehouseId" :value="warehouseId" />
                     <label for="warehouseId">Magazyn id</label>
                 </div>
                 <div class="d-flex justify-content-center">
-                    <button class="btn btn-secondary">Save settings</button>
+                    <button @click="settingsStore.saveSettingData(settings)" class="btn btn-secondary">Save settings</button>
                 </div>
             </div>
             <div class="col-2"></div>
@@ -35,10 +35,13 @@
 
 <script setup>
 import { useProductStore } from '@/stores/productStore.js'
+import { useSettingsStore } from '@/stores/settingsStore.js'
 
+let settings = { 
+    token: "",
+    catalogueId: "",
+    warehouseId: "",
+}
 const productStore = useProductStore()
-//@change="productStore.send"
-const token = "123Test"
-const catalogueId = "123Test"
-const warehouseId = "123Test"
+const settingsStore = useSettingsStore()
 </script>
