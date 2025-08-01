@@ -18,6 +18,7 @@ export const useMappingStore = defineStore('mapping', {
     mappedCategories: [],
     products: [],
     productsPayload: {},
+    isSending: false,
   }),
   getters: {
     currentFields: (state) => {
@@ -81,6 +82,7 @@ export const useMappingStore = defineStore('mapping', {
       modalStore.categoryModalRef.show();
     },
     async sendFile(payload) {
+      this.isSending = !this.isSending;
       const modalStore = useModalStore();
       const referenceDataStore = useReferenceDataStore();
       try {
@@ -102,11 +104,16 @@ export const useMappingStore = defineStore('mapping', {
         payload.products = flatProducts;
         await axios.post('https://localhost:7144/api/products/csv', payload);
         modalStore.categoryModalRef.closeModal();
-        if (this.saveMapping)
+        if (this.saveMapping){
+          this.isSending = !this.isSending;
           this.createMappingPayload();
-        else           
+        }
+        else {
+          this.isSending = !this.isSending;
           referenceDataStore.getProductsNotInBaselinker(1, 20);
+        }           
       } catch (e) {
+        this.isSending = !this.isSending;
         console.error(e);
       }
     },
@@ -183,14 +190,17 @@ export const useMappingStore = defineStore('mapping', {
     },
     async sendSavedMappings() {
       const modalStore = useModalStore();
+      this.isSending = !this.isSending;
 
       for(let payload of this.mappingPayloads) {
         await axios.post('https://localhost:7144/api/mappings', payload)
         .then(response => {
             console.log("Mapping saved successfully!", response);
+            this.isSending = !this.isSending;
         })
         .catch(error => {
           console.error("Error occurred during saving mapping: ", error);
+          this.isSending = !this.isSending;
         }); 
       }
 

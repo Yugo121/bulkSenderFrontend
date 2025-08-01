@@ -28,6 +28,7 @@
           </div>
           <div v-if="!referenceDataStore.queue && productStore.productsNotInBl.length > 0" class="text-center">
             <button @click="referenceDataStore.startSending(productStore.productsNotInBl)" class="btn btn-light">Send to baselinker!</button>
+            <!-- <button @click="referenceDataStore.deleteNotInBl(productStore.productsNotInBl)" class="btn btn-light">Delete not in baselinker!</button> -->
           </div>
           <div v-if="referenceDataStore.queue">
           <div v-if="referenceDataStore.queue.processing" class="d-flex justify-content-center gap-2 my-3">

@@ -1,6 +1,7 @@
 <template>
     <BaseModal ref="mapCategories" :title="title">
         <template #body>
+            <div class="mb-3" v-if="!mappingStore.isSending">
                 <ul class="list-group">
                     <li :id="category" v-for="category in mappingStore.getCategoriesFromFile()" :key="category" class="list-group">
                         <div class="input-group mb-3">
@@ -21,11 +22,17 @@
                         Save mapping
                     </label>
                 </div>
+            </div>
+            <div v-else class="d-flex justify-content-center align-items-center">
+                <div class="spinner-border text-light" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
         </template>
 
         <template #footer>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" @click="mappingStore.sendFile(mappingStore.productsPayload)" class="btn btn-light">Save mapping</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" @click="mappingStore.sendFile(mappingStore.productsPayload)" class="btn btn-light" :disabled="mappingStore.isSending">Save mapping</button>
         </template>
     </BaseModal>
 
