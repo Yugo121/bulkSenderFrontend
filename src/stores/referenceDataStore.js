@@ -146,6 +146,7 @@ export const useReferenceDataStore = defineStore('referenceData', {
       }catch(error){
         console.error("Error fetching Baselinker categories: ", error);
       }
+      console.log("Fetched Baselinker categories: ", this.blCategories);
       return this.blCategories;
     },
     async addBaselinkerCategories() {
